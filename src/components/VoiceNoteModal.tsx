@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -25,10 +24,10 @@ const VoiceNoteModal = ({ onOpenChange }: VoiceNoteModalProps) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (logData: { title: string; description: string }) => submitLog(logData),
+    mutationFn: submitLog,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['logs'] });
-      toast.success("Voice note saved and added to timeline!");
+      toast.success("Voice note saved & interpreted for others!");
       handleClose();
     },
     onError: (error) => {
@@ -68,8 +67,8 @@ const VoiceNoteModal = ({ onOpenChange }: VoiceNoteModalProps) => {
 
   const handleSave = () => {
     const title = `Voice Note - ${new Date().toLocaleString()}`;
-    const description = `A voice note was recorded for ${recordingTime} seconds. In a real app, a transcript would appear here.`;
-    mutation.mutate({ title, description });
+    const description = `A voice note was recorded for ${recordingTime} seconds. The transcript would contain keywords like 'sad' or 'happy tummy'.`;
+    mutation.mutate({ title, description, type: 'voice' });
   };
   
   const handleDiscard = () => {
@@ -138,4 +137,3 @@ const VoiceNoteModal = ({ onOpenChange }: VoiceNoteModalProps) => {
 };
 
 export default VoiceNoteModal;
-
