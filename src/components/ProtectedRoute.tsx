@@ -33,7 +33,16 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   }
 
   if (profile?.role && location.pathname === '/select-role') {
+    if (profile.role === 'Admin') {
+      return <Navigate to="/compliance" replace />;
+    }
     return <Navigate to={profile.role === 'Parent' ? '/dashboard' : '/team-dashboard'} replace />;
+  }
+
+  // Restrict access to compliance dashboard for non-admins
+  if (location.pathname.startsWith('/compliance') && profile?.role !== 'Admin') {
+    const dashboardPath = profile?.role === 'Parent' ? '/dashboard' : '/team-dashboard';
+    return <Navigate to={profile?.role ? dashboardPath : '/select-role'} replace />;
   }
 
   return children;

@@ -256,7 +256,7 @@ export type Database = {
       author_role: "Parent" | "Teacher" | "Doctor"
       invitation_status: "pending" | "accepted" | "expired" | "revoked"
       log_type: "text" | "voice" | "document"
-      user_role: "Parent" | "Teacher" | "Doctor"
+      user_role: "Parent" | "Teacher" | "Doctor" | "Admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -375,7 +375,7 @@ export const Constants = {
       author_role: ["Parent", "Teacher", "Doctor"],
       invitation_status: ["pending", "accepted", "expired", "revoked"],
       log_type: ["text", "voice", "document"],
-      user_role: ["Parent", "Teacher", "Doctor"],
+      user_role: ["Parent", "Teacher", "Doctor", "Admin"],
     },
   },
 } as const

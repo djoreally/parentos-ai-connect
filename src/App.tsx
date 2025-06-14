@@ -18,6 +18,7 @@ import AddChildPage from "./pages/AddChildPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
               <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
               <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+              <Route path="/compliance" element={<ProtectedRoute><ComplianceDashboardPage /></ProtectedRoute>} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

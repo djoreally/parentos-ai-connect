@@ -25,6 +25,9 @@ const PublicRoute = ({ children }: { children: JSX.Element }) => {
 
   if (user) {
     if (profile?.role) {
+      if (profile.role === 'Admin') {
+        return <Navigate to="/compliance" replace />;
+      }
       const dashboardPath = profile.role === 'Parent' ? '/dashboard' : '/team-dashboard';
       return <Navigate to={dashboardPath} replace />;
     }
