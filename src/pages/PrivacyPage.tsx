@@ -1,7 +1,7 @@
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ShieldCheck, ShieldX } from 'lucide-react';
+import { ShieldCheck, ShieldX, MessageSquareQuote } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const PrivacyPage = () => {
@@ -52,6 +52,29 @@ const PrivacyPage = () => {
                     <li>
                         We <strong>do not</strong> send your child's records over insecure channels like standard email.
                     </li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center gap-4">
+                <MessageSquareQuote className="h-8 w-8 text-primary" />
+                <CardTitle>Notification & Communication Policy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  To protect your privacy, we follow a strict "in-app only" policy for sensitive data. We will never send Protected Health Information (PHI) or other sensitive details through external channels like email or push notifications.
+                </p>
+                <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                  <li>
+                    <strong>Generic Notifications:</strong> Any notification you receive (e.g., "New log added") is designed to be a simple alert. It will not contain any specific data about your child.
+                  </li>
+                  <li>
+                    <strong>Secure Viewing:</strong> You will always be prompted to log into our secure platform to view any details.
+                  </li>
+                  <li>
+                    <strong>Reduced Risk:</strong> This practice significantly reduces the compliance burden under HIPAA and FERPA, as no sensitive information leaves our secure environment.
+                  </li>
                 </ul>
               </CardContent>
             </Card>

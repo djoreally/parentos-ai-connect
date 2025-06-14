@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Shield, Info, List } from 'lucide-react';
@@ -36,6 +35,9 @@ const LegalPage = () => {
               <CardContent>
                 <p className="text-muted-foreground">
                   ParentOS is an informational tool and is not intended to provide medical, legal, or educational advice. The AI-generated insights are based on patterns in the data provided and should not be considered as diagnoses or professional recommendations. Always consult with a qualified professional for any health, developmental, or legal concerns regarding your child.
+                </p>
+                <p className="text-muted-foreground mt-4">
+                  All sensitive data is contained within the secure platform and is not transmitted via external channels. Generated reports (like PDF digests) are for personal use and should be handled with care.
                 </p>
               </CardContent>
             </Card>

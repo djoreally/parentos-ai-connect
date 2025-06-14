@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,23 +8,35 @@ import { ArrowLeft, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import NotFound from './NotFound';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { getLogs } from '@/api/logs';
+import { getLogs, generatePdfDigest } from '@/api/logs';
 import { getChildById } from '@/api/children';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmotionTimelineChart from '@/components/EmotionTimelineChart';
 import LogHistory from '@/components/LogHistory';
-import { generatePdfDigest } from '@/api/logs';
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from 'react';
+import { logAuditEvent } from '@/api/audit';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ChildProfilePage = () => {
   const { childId } = useParams<{ childId: string }>();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data: child, isLoading: isLoadingChild } = useQuery({
     queryKey: ['child', childId],
     queryFn: () => getChildById(childId!),
     enabled: !!childId,
   });
+
+  useEffect(() => {
+    if (childId && user) {
+      logAuditEvent('CHILD_PROFILE_VIEWED', {
+        target_entity: 'child',
+        target_id: childId,
+      });
+    }
+  }, [childId, user]);
 
   const { data: logs, isLoading: isLoadingLogs, isError } = useQuery({
     queryKey: ['logs', childId],
@@ -43,7 +56,11 @@ const ChildProfilePage = () => {
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
-        toast({ title: "Success", description: "PDF digest downloaded." });
+        toast({ 
+          title: "Digest Downloaded", 
+          description: "PDF successfully generated. Please handle with care and avoid sharing via unsecure channels like email.",
+          duration: 7000,
+        });
     },
     onError: (error) => {
         console.error(error);

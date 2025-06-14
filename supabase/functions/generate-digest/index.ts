@@ -59,9 +59,25 @@ serve(async (req) => {
                         .log-entry { background-color: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
                         .log-title { font-size: 1.2em; font-weight: bold; color: #4a5568; }
                         .log-meta { font-size: 0.9em; color: #718096; margin-bottom: 0.5rem; }
+                        .watermark {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(-45deg);
+                            font-size: 6rem;
+                            color: rgba(150, 0, 0, 0.08);
+                            font-weight: bold;
+                            pointer-events: none;
+                            z-index: 1000;
+                            text-align: center;
+                            width: 100%;
+                            letter-spacing: 0.5rem;
+                            text-transform: uppercase;
+                        }
                     </style>
                 </head>
                 <body>
+                    <div class="watermark">Confidential</div>
                     <div class="container">
                         <h1>Weekly Digest for ${child.name}</h1>
                         <p><strong>Date of Birth:</strong> ${new Date(child.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</p>
@@ -110,4 +126,3 @@ serve(async (req) => {
         });
     }
 })
-
