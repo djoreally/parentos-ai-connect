@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -5,7 +6,7 @@ import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogEntry, Child } from '@/types';
-import { Mic, UploadCloud, Languages, BrainCircuit, UserPlus } from 'lucide-react';
+import { UploadCloud, Languages, BrainCircuit, UserPlus } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
@@ -14,7 +15,6 @@ import { getLogs } from '@/api/logs';
 import { getChildren } from '@/api/children';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import VoiceNoteModal from '@/components/VoiceNoteModal';
 import UploadFormModal from '@/components/UploadFormModal';
 import TranslateMessageModal from '@/components/TranslateMessageModal';
 import AiInsights from '@/components/AiInsights';
