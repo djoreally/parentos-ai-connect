@@ -18,6 +18,7 @@ import AddChildPage from "./pages/AddChildPage";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import AdminRoute from "./components/AdminRoute";
 import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 import LegalPage from "./pages/LegalPage";
 import PrivacyPage from "./pages/PrivacyPage";
@@ -46,7 +47,7 @@ const App = () => (
               <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
               <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
               <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
-              <Route path="/compliance" element={<ProtectedRoute><ComplianceDashboardPage /></ProtectedRoute>} />
+              <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
