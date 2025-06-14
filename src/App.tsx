@@ -8,6 +8,7 @@ import LandingPage from "./pages/Landing";
 import LoginPage from "./pages/Login";
 import SignUpPage from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
+import ChildProfilePage from "./pages/ChildProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/child/:childId" element={<ChildProfilePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

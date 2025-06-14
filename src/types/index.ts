@@ -4,6 +4,9 @@ export type Child = {
   name: string;
   avatarUrl: string;
   aiSummary: string;
+  dob: string;
+  allergies: string[];
+  medications: string[];
 };
 
 export type LogEntry = {

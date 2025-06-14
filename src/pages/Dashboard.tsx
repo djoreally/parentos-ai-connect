@@ -1,4 +1,6 @@
+
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
@@ -35,7 +37,9 @@ const Dashboard = () => {
                 selectedChildId={selectedChildId}
                 onSelectChild={(id) => setSelectedChildId(Number(id))}
               />
-              <ChildProfileCard child={selectedChild} />
+              <Link to={`/child/${selectedChild.id}`} className="block rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                <ChildProfileCard child={selectedChild} />
+              </Link>
             </>
           ) : (
              <Card>
