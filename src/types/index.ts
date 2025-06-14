@@ -1,4 +1,3 @@
-
 export type Child = {
   id: string; // Changed from number
   user_id: string;
@@ -26,4 +25,13 @@ export type LogEntry = {
   summary_for_doctor: string | null; // Can be null
   tags: string[] | null; // Can be null
   emotionScore?: number | null; // Can be null
+};
+
+export type Profile = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  role: 'Parent' | 'Teacher' | 'Doctor' | null;
+  created_at: string;
+  updated_at: string;
 };

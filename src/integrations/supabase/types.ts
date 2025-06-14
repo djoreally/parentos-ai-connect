@@ -98,6 +98,33 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -108,6 +135,7 @@ export type Database = {
     Enums: {
       author_role: "Parent" | "Teacher" | "Doctor"
       log_type: "text" | "voice" | "document"
+      user_role: "Parent" | "Teacher" | "Doctor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -225,6 +253,7 @@ export const Constants = {
     Enums: {
       author_role: ["Parent", "Teacher", "Doctor"],
       log_type: ["text", "voice", "document"],
+      user_role: ["Parent", "Teacher", "Doctor"],
     },
   },
 } as const

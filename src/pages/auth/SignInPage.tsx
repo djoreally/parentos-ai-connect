@@ -19,30 +19,65 @@ const SignInPage = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    setIsLoading(false);
 
-    if (error) {
+    if (signInError) {
+      setIsLoading(false);
       toast({
         title: "Sign in failed",
-        description: error.message,
+        description: signInError.message,
         variant: "destructive",
       });
-    } else {
+      return;
+    }
+
+    if (!signInData.user) {
+      setIsLoading(false);
       toast({
+        title: "Sign in failed",
+        description: "Could not get user information. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // User is available, let's get their profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', signInData.user.id)
+      .maybeSingle();
+
+    setIsLoading(false);
+
+    if (profileError) {
+      toast({
+        title: "Sign in failed",
+        description: "There was a problem retrieving your profile. Please try logging in again.",
+        variant: "destructive",
+      });
+      await supabase.auth.signOut();
+      return;
+    }
+    
+    toast({
         title: "Welcome back!",
         description: "You have been successfully signed in.",
-      });
-      
-      const userRole = localStorage.getItem('userRole');
-      if (!userRole) {
+    });
+
+    if (profile && profile.role) {
+        if (profile.role === 'Parent') {
+            navigate('/dashboard');
+        } else {
+            navigate('/team-dashboard');
+        }
+    } else {
+        // Role is not set, go to role selection
         navigate('/select-role');
-      } else {
-        navigate('/dashboard');
-      }
     }
   };
 

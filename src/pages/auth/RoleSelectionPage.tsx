@@ -5,32 +5,47 @@ import { Card, CardContent } from '@/components/ui/card';
 import { User, School, Stethoscope } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { updateProfile } from '@/api/profiles';
+import { Profile } from '@/types';
 
 const RoleSelectionPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const roles = [
     { name: 'Parent', icon: <User /> },
     { name: 'Teacher', icon: <School /> },
     { name: 'Doctor', icon: <Stethoscope /> },
-  ];
+  ] as const;
 
-  const handleRoleSelect = (roleName: string) => {
-    // In a real app, you'd save this to a user profile. Here, we use localStorage.
-    localStorage.setItem('userRole', roleName);
-    
-    console.log('Role selected and saved to localStorage:', roleName);
-    toast({
-      title: "Role Selected!",
-      description: `You are now logged in as a ${roleName}. Redirecting...`,
-    });
+  const { mutate, isPending } = useMutation<Profile, Error, { role: 'Parent' | 'Teacher' | 'Doctor' }>({
+    mutationFn: updateProfile,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast({
+        title: "Role Selected!",
+        description: `You are now set up as a ${data.role}. Redirecting...`,
+      });
 
-    if (roleName === 'Parent') {
-      navigate('/dashboard');
-    } else {
-      navigate('/team-dashboard');
-    }
+      if (data.role === 'Parent') {
+        navigate('/dashboard');
+      } else {
+        navigate('/team-dashboard');
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to save role: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleRoleSelect = (roleName: 'Parent' | 'Teacher' | 'Doctor') => {
+    mutate({ role: roleName });
   };
 
   return (
@@ -46,6 +61,7 @@ const RoleSelectionPage = () => {
               variant="outline"
               className="w-full justify-start text-lg p-6 gap-4"
               onClick={() => handleRoleSelect(role.name)}
+              disabled={isPending}
             >
               {role.icon}
               <span>{role.name}</span>
@@ -53,6 +69,7 @@ const RoleSelectionPage = () => {
           ))}
         </CardContent>
       </Card>
+      {isPending && <p className="text-center text-muted-foreground mt-4">Saving your role...</p>}
     </AuthLayout>
   );
 };
