@@ -48,24 +48,25 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-white text-foreground">
       <LandingHeader />
       <main className="flex flex-1 justify-center py-5 px-4 sm:px-10">
         <div className="flex max-w-[960px] flex-1 flex-col @container">
           {/* Hero Section */}
           <section>
             <div
-              className="flex min-h-[480px] flex-col gap-6 @[480px]:gap-8 items-center justify-center p-4 rounded-lg bg-accent text-center"
+              className="flex min-h-[480px] flex-col gap-6 @[480px]:gap-8 items-center justify-center p-4 rounded-lg bg-cover bg-center text-center"
+              style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.4)), url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop")' }}
             >
               <div className="flex flex-col gap-2">
-                <h1 className="text-foreground text-4xl @[480px]:text-5xl font-black leading-tight tracking-[-0.033em]">
+                <h1 className="text-white text-4xl @[480px]:text-5xl font-black leading-tight tracking-[-0.033em]">
                   Connect Caregivers, Support Your Child's Growth
                 </h1>
-                <h2 className="text-muted-foreground text-sm @[480px]:text-base font-normal leading-normal">
+                <h2 className="text-white text-sm @[480px]:text-base font-normal leading-normal">
                   ParentOS integrates insights from parents, teachers, and doctors into a single timeline, ensuring comprehensive support for your child's well-being.
                 </h2>
               </div>
-              <Button asChild className="h-10 px-4 @[480px]:h-12 @[480px]:px-5 text-sm @[480px]:text-base font-bold leading-normal tracking-[0.015em]">
+              <Button asChild className="h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-primary text-white text-sm @[480px]:text-base font-bold leading-normal tracking-[0.015em]">
                 <Link to="/register">Get Started</Link>
               </Button>
             </div>
@@ -73,8 +74,8 @@ const LandingPage = () => {
 
           {/* Why ParentOS Section */}
           <section id="about" className="text-center">
-            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Why ParentOS?</h2>
-            <p className="text-foreground text-base font-normal leading-normal pb-3 pt-1 px-4">
+            <h2 className="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Why ParentOS?</h2>
+            <p className="text-[#111418] text-base font-normal leading-normal pb-3 pt-1 px-4">
               ParentOS bridges the communication gap between caregivers, providing a unified view of your child's development. Track progress, identify needs, and collaborate effectively to ensure your child thrives.
             </p>
           </section>
@@ -82,10 +83,10 @@ const LandingPage = () => {
           {/* Key Features Section */}
           <section id="features" className="px-4 py-10">
             <div className="flex flex-col gap-4 mb-10">
-              <h1 className="text-foreground tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px]">
+              <h1 className="text-[#111418] tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em] max-w-[720px]">
                 Key Features
               </h1>
-              <p className="text-foreground text-base font-normal leading-normal max-w-[720px]">
+              <p className="text-[#111418] text-base font-normal leading-normal max-w-[720px]">
                 ParentOS offers a range of features designed to streamline communication and support your child's growth.
               </p>
             </div>
@@ -103,7 +104,7 @@ const LandingPage = () => {
 
           {/* Testimonials Section */}
           <section id="testimonials">
-            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Testimonials</h2>
+            <h2 className="text-[#111418] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Testimonials</h2>
             <div className="flex overflow-x-auto p-4 gap-3 [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {testimonials.map((testimonial) => (
                 <TestimonialCard
@@ -120,14 +121,14 @@ const LandingPage = () => {
           {/* CTA Section */}
           <section id="pricing" className="text-center px-4 py-10 @[480px]:px-10 @[480px]:py-20">
             <div className="flex flex-col gap-2 text-center max-w-[720px] mx-auto">
-              <h1 className="text-foreground tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
+              <h1 className="text-[#111418] tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
                 Ready to Connect Caregivers and Support Your Child's Growth?
               </h1>
-              <p className="text-foreground text-base font-normal leading-normal mb-8">
+              <p className="text-[#111418] text-base font-normal leading-normal mb-8">
                 Request a demo today and see how ParentOS can transform your child's well-being.
               </p>
             </div>
-            <Button asChild className="h-10 px-4 @[480px]:h-12 @[480px]:px-5 text-sm @[480px]:text-base font-bold leading-normal tracking-[0.015em]">
+            <Button asChild className="h-10 px-4 @[480px]:h-12 @[480px]:px-5 bg-primary text-white text-sm @[480px]:text-base font-bold leading-normal tracking-[0.015em]">
               <Link to="/register">Request Demo</Link>
             </Button>
           </section>
