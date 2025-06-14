@@ -16,6 +16,8 @@ export type Database = {
           details: Json | null
           id: string
           ip_address: unknown | null
+          target_entity: string | null
+          target_id: string | null
           user_id: string | null
         }
         Insert: {
@@ -24,6 +26,8 @@ export type Database = {
           details?: Json | null
           id?: string
           ip_address?: unknown | null
+          target_entity?: string | null
+          target_id?: string | null
           user_id?: string | null
         }
         Update: {
@@ -32,6 +36,8 @@ export type Database = {
           details?: Json | null
           id?: string
           ip_address?: unknown | null
+          target_entity?: string | null
+          target_id?: string | null
           user_id?: string | null
         }
         Relationships: [

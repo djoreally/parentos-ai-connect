@@ -1,4 +1,3 @@
-
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -33,7 +32,7 @@ const SignInPage = () => {
 
     if (error) {
       setIsLoading(false);
-      await logAuditEvent('USER_LOGIN_FAIL', { email, error: error.message });
+      await logAuditEvent('USER_LOGIN_FAIL', { details: { email, error: error.message }, target_entity: 'user' });
       toast({
         title: "Sign in failed",
         description: error.message,
@@ -59,7 +58,7 @@ const SignInPage = () => {
       const totpFactor = factorsData.totp[0];
       if (!totpFactor) {
         setIsLoading(false);
-        await logAuditEvent('USER_LOGIN_FAIL', { email, error: "User has no TOTP factor enrolled but MFA is required." });
+        await logAuditEvent('USER_LOGIN_FAIL', { details: { email, error: "User has no TOTP factor enrolled but MFA is required." }, target_entity: 'user' });
         toast({
           title: "MFA Required, but no authenticator app is set up.",
           description: "Please contact support if you've lost access.",
@@ -77,7 +76,7 @@ const SignInPage = () => {
       });
     } else {
       setIsLoading(false);
-      await logAuditEvent('USER_LOGIN_SUCCESS', { email });
+      await logAuditEvent('USER_LOGIN_SUCCESS', { details: { email }, target_entity: 'user', target_id: data.session.user.id });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
           title: "Welcome back!",
@@ -109,7 +108,7 @@ const SignInPage = () => {
     setIsLoading(false);
     
     if (error) {
-      await logAuditEvent('USER_MFA_VERIFICATION_FAIL', { email, error: error.message });
+      await logAuditEvent('USER_MFA_VERIFICATION_FAIL', { details: { email, error: error.message }, target_entity: 'user' });
       toast({
         title: "Verification Failed",
         description: error.message,
@@ -118,7 +117,7 @@ const SignInPage = () => {
       return;
     }
 
-    await logAuditEvent('USER_MFA_VERIFICATION_SUCCESS', { email });
+    await logAuditEvent('USER_MFA_VERIFICATION_SUCCESS', { details: { email }, target_entity: 'user' });
     queryClient.invalidateQueries({ queryKey: ['profile'] });
     toast({
       title: "Welcome back!",

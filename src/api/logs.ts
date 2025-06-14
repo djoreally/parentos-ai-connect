@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { LogEntry } from '@/types';
+import { logAuditEvent } from './audit';
 
 // This function simulates fetching logs from an API.
 export const getLogs = async (childId: string): Promise<LogEntry[]> => {
@@ -120,6 +121,12 @@ export const submitLog = async (
     console.error("Error submitting log:", error);
     throw error;
   }
+
+  await logAuditEvent('LOG_CREATED', {
+    target_entity: 'log',
+    target_id: newLog.id,
+    details: { child_id: childId, type: type }
+  });
   
   console.log("Supabase responded with new log:", newLog);
   // Cast to unknown first to satisfy TypeScript's stricter type checking
@@ -139,6 +146,12 @@ export const generatePdfDigest = async (childId: string, startDate: Date, endDat
         console.error('Error generating PDF digest:', error);
         throw new Error('Failed to generate PDF digest.');
     }
+    
+    await logAuditEvent('PDF_DIGEST_GENERATED', {
+        target_entity: 'child',
+        target_id: childId,
+        details: { startDate: startDate.toISOString(), endDate: endDate.toISOString() }
+    });
     
     return data;
 };

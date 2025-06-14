@@ -5,12 +5,22 @@ export type AuditAction =
   | 'USER_LOGIN_SUCCESS' 
   | 'USER_LOGIN_FAIL'
   | 'USER_MFA_VERIFICATION_SUCCESS'
-  | 'USER_MFA_VERIFICATION_FAIL';
+  | 'USER_MFA_VERIFICATION_FAIL'
+  | 'LOG_CREATED'
+  | 'LOG_UPDATED'
+  | 'LOG_DELETED'
+  | 'PDF_DIGEST_GENERATED';
 
 export const logAuditEvent = async (
   action: AuditAction, 
-  details?: Record<string, any>
+  options: {
+    details?: Record<string, any>;
+    target_entity?: string;
+    target_id?: string;
+  } = {}
 ) => {
+  const { details, target_entity, target_id } = options;
+
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -24,6 +34,8 @@ export const logAuditEvent = async (
       user_id: userId,
       action,
       details,
+      target_entity,
+      target_id: target_id ?? userId, // Default target_id to the acting user if not specified
     });
 
     if (error) {
