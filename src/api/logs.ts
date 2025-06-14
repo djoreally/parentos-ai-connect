@@ -102,7 +102,7 @@ export const submitLog = async (
     child_id: childId,
     user_id: user.id,
     author: 'Parent' as const, // Corrected casing to match DB enum.
-    type: type.toUpperCase(), // Using uppercase for enum consistency.
+    type: type, // Match the DB enum which is lowercase.
     original_entry: { title, description },
     summary_for_teacher,
     summary_for_doctor,
