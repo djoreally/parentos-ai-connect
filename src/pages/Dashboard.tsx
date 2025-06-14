@@ -14,6 +14,8 @@ import NewLogForm from '@/components/NewLogForm';
 import { useQuery } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import VoiceNoteModal from '@/components/VoiceNoteModal';
 
 const Dashboard = () => {
   const { data: logs, isLoading, isError } = useQuery<LogEntry[]>({
@@ -23,6 +25,7 @@ const Dashboard = () => {
 
   const [children] = useState<Child[]>(mockChildren || []);
   const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.id || 0);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
   const selectedChild = children.find(child => child.id === selectedChildId);
 
@@ -58,7 +61,12 @@ const Dashboard = () => {
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              <Button size="lg" variant="outline"><Mic /> Log Voice Note</Button>
+              <Dialog open={isVoiceModalOpen} onOpenChange={setIsVoiceModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="outline"><Mic /> Log Voice Note</Button>
+                </DialogTrigger>
+                <VoiceNoteModal onOpenChange={setIsVoiceModalOpen} />
+              </Dialog>
               <Button size="lg" variant="outline"><UploadCloud /> Upload Form</Button>
               <Button size="lg" variant="outline"><Languages /> Translate Message</Button>
               <Button asChild size="lg" variant="outline">
@@ -102,3 +110,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
