@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { LogEntry } from '@/types';
 
@@ -81,10 +80,16 @@ const generateAiSummaries = (title: string, description: string) => {
 
 // This is a mock API function that simulates submitting a new log to a server.
 export const submitLog = async (
-  logData: { title: string; description: string; childId: string; type: LogEntry['type']; }
+  logData: {
+    title: string;
+    description: string;
+    childId: string;
+    type: LogEntry['type'];
+    audio_url?: string;
+  }
 ): Promise<LogEntry> => {
   console.log("Submitting log to Supabase:", logData);
-  const { title, description, childId, type } = logData;
+  const { title, description, childId, type, audio_url } = logData;
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated to submit log");
@@ -102,6 +107,7 @@ export const submitLog = async (
     summary_for_doctor,
     tags,
     emotionScore,
+    audio_url,
   };
 
   const { data: newLog, error } = await supabase
@@ -119,4 +125,3 @@ export const submitLog = async (
   // Cast to unknown first to satisfy TypeScript's stricter type checking
   return newLog as unknown as LogEntry;
 };
-

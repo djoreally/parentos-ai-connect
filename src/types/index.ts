@@ -25,6 +25,7 @@ export type LogEntry = {
   summary_for_doctor: string | null; // Can be null
   tags: string[] | null; // Can be null
   emotionScore?: number | null; // Can be null
+  audio_url?: string | null;
 };
 
 export type Profile = {

@@ -123,6 +123,7 @@ export type Database = {
       }
       logs: {
         Row: {
+          audio_url: string | null
           author: Database["public"]["Enums"]["author_role"]
           child_id: string
           created_at: string
@@ -137,6 +138,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audio_url?: string | null
           author: Database["public"]["Enums"]["author_role"]
           child_id: string
           created_at?: string
@@ -151,6 +153,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audio_url?: string | null
           author?: Database["public"]["Enums"]["author_role"]
           child_id?: string
           created_at?: string

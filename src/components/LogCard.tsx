@@ -1,4 +1,3 @@
-
 import { LogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -54,6 +53,14 @@ const LogCard = ({ log }: LogCardProps) => {
             <TabsTrigger value="doctor"><Stethoscope className="h-4 w-4 mr-2"/> For Doctor</TabsTrigger>
           </TabsList>
           <TabsContent value="parent" className="p-6 text-sm">
+            {log.audio_url && log.type === 'voice' && (
+              <div className="mb-4">
+                <p className="font-semibold mb-2">Original Recording:</p>
+                <audio controls src={log.audio_url} className="w-full">
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+            )}
             <p className="whitespace-pre-wrap">{log.original_entry.description}</p>
           </TabsContent>
           <TabsContent value="teacher" className="p-6 text-sm bg-secondary/10">
