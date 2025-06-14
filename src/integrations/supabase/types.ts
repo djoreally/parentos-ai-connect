@@ -218,6 +218,45 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          child_id: string
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          child_id: string
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          child_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           child_id: string
@@ -311,7 +350,7 @@ export type Database = {
       author_role: "Parent" | "Teacher" | "Doctor"
       invitation_status: "pending" | "accepted" | "expired" | "revoked"
       log_type: "text" | "voice" | "document"
-      notification_type: "new_log" | "team_invite" | "alert"
+      notification_type: "new_log" | "team_invite" | "alert" | "new_message"
       user_role: "Parent" | "Teacher" | "Doctor" | "Admin"
     }
     CompositeTypes: {
@@ -431,7 +470,7 @@ export const Constants = {
       author_role: ["Parent", "Teacher", "Doctor"],
       invitation_status: ["pending", "accepted", "expired", "revoked"],
       log_type: ["text", "voice", "document"],
-      notification_type: ["new_log", "team_invite", "alert"],
+      notification_type: ["new_log", "team_invite", "alert", "new_message"],
       user_role: ["Parent", "Teacher", "Doctor", "Admin"],
     },
   },

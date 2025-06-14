@@ -43,8 +43,20 @@ export type Notification = {
   user_id: string;
   child_id: string;
   log_id: string | null;
-  type: 'new_log' | 'team_invite' | 'alert';
+  type: 'new_log' | 'team_invite' | 'alert' | 'new_message';
   message: string;
   is_read: boolean;
   created_at: string;
+};
+
+export type Message = {
+  id: string;
+  child_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null;
 };

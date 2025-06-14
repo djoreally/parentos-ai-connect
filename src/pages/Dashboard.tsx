@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -5,7 +6,7 @@ import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogEntry, Child } from '@/types';
-import { UploadCloud, Languages, BrainCircuit, UserPlus } from 'lucide-react';
+import { UploadCloud, Languages, BrainCircuit, UserPlus, MessageSquare } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
@@ -22,6 +23,7 @@ import InviteTeamMemberDialog from '@/components/InviteTeamMemberDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import NotificationBell from '@/components/NotificationBell';
+import TeamChatDialog from '@/components/TeamChatDialog';
 
 const Dashboard = () => {
   const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
@@ -83,6 +85,7 @@ const Dashboard = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
   const selectedChild = children?.find(child => child.id === selectedChildId);
 
@@ -124,24 +127,40 @@ const Dashboard = () => {
               <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
               <NotificationBell />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" variant="outline" disabled={!selectedChildId}><UploadCloud /> Upload Form</Button>
+                  <Button size="lg" variant="outline" disabled={!selectedChildId}><UploadCloud className="mr-2 h-4 w-4" /> Upload Form</Button>
                 </DialogTrigger>
                 <UploadFormModal onOpenChange={setIsUploadModalOpen} selectedChildId={selectedChildId} />
               </Dialog>
 
               <Dialog open={isTranslateModalOpen} onOpenChange={setIsTranslateModalOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" variant="outline"><Languages /> Translate Message</Button>
+                  <Button size="lg" variant="outline"><Languages className="mr-2 h-4 w-4" /> Translate Message</Button>
                 </DialogTrigger>
                 <TranslateMessageModal onOpenChange={setIsTranslateModalOpen} />
+              </Dialog>
+
+              <Dialog open={isChatModalOpen} onOpenChange={setIsChatModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="outline" disabled={!selectedChildId}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Team Chat
+                  </Button>
+                </DialogTrigger>
+                {selectedChild && (
+                  <TeamChatDialog
+                    childId={selectedChild.id}
+                    childName={selectedChild.name}
+                    isOpen={isChatModalOpen}
+                    onOpenChange={setIsChatModalOpen}
+                  />
+                )}
               </Dialog>
               
               <Button asChild size="lg" variant="outline" disabled={!selectedChildId}>
                 <Link to={selectedChildId ? `/assistant?childId=${selectedChildId}` : '/assistant'}>
-                  <BrainCircuit /> Ask AI Assistant
+                  <BrainCircuit className="mr-2 h-4 w-4" /> AI Assistant
                 </Link>
               </Button>
               
