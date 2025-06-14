@@ -125,3 +125,21 @@ export const submitLog = async (
   // Cast to unknown first to satisfy TypeScript's stricter type checking
   return newLog as unknown as LogEntry;
 };
+
+export const generatePdfDigest = async (childId: string, startDate: Date, endDate: Date): Promise<Blob> => {
+    const { data, error } = await supabase.functions.invoke('generate-digest', {
+        body: { 
+            childId, 
+            startDate: startDate.toISOString(), 
+            endDate: endDate.toISOString() 
+        },
+        responseType: 'blob',
+    });
+
+    if (error) {
+        console.error('Error generating PDF digest:', error);
+        throw new Error('Failed to generate PDF digest.');
+    }
+    
+    return data;
+};

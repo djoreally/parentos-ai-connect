@@ -1,21 +1,23 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import NotFound from './NotFound';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
 import { getChildById } from '@/api/children';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmotionTimelineChart from '@/components/EmotionTimelineChart';
 import LogHistory from '@/components/LogHistory';
+import { generatePdfDigest } from '@/api/logs';
+import { useToast } from "@/components/ui/use-toast";
 
 const ChildProfilePage = () => {
   const { childId } = useParams<{ childId: string }>();
+  const { toast } = useToast();
 
   const { data: child, isLoading: isLoadingChild } = useQuery({
     queryKey: ['child', childId],
@@ -28,6 +30,36 @@ const ChildProfilePage = () => {
     queryFn: () => getLogs(childId!),
     enabled: !!childId,
   });
+
+  const generateDigestMutation = useMutation({
+    mutationFn: ({ childId, startDate, endDate }: { childId: string; startDate: Date; endDate: Date; }) => 
+        generatePdfDigest(childId, startDate, endDate),
+    onSuccess: (blob, variables) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `weekly-digest-${child?.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        toast({ title: "Success", description: "PDF digest downloaded." });
+    },
+    onError: (error) => {
+        console.error(error);
+        toast({ variant: "destructive", title: "Error", description: "Failed to generate PDF digest. The service may be busy, please try again in a moment." });
+    },
+  });
+
+  const handleGenerateDigest = () => {
+    if (!childId) return;
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+    
+    toast({ title: "Processing", description: "Generating your weekly digest... This can take up to a minute." });
+    generateDigestMutation.mutate({ childId, startDate, endDate });
+  };
 
   if (isLoadingChild) {
     return (
@@ -53,12 +85,16 @@ const ChildProfilePage = () => {
     <div className="min-h-screen bg-background animate-fade-in">
       <Header />
       <main className="container mx-auto px-4 md:px-8 pb-12">
-        <div className="mb-6">
+        <div className="flex flex-wrap items-center gap-4 mb-6">
           <Button variant="outline" asChild>
             <Link to="/dashboard">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Dashboard
             </Link>
+          </Button>
+          <Button variant="default" onClick={handleGenerateDigest} disabled={generateDigestMutation.isPending}>
+            <Download className="mr-2 h-4 w-4" />
+            {generateDigestMutation.isPending ? 'Generating...' : 'Download Weekly Digest'}
           </Button>
         </div>
         <div className="space-y-8">
