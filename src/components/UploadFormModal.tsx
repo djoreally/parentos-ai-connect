@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DialogContent,
@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { FileText, Save, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { submitLog } from '@/api/logs';
+import { uploadDocument } from '@/api/storage';
 
 interface UploadFormModalProps {
   onOpenChange: (open: boolean) => void;
@@ -23,12 +24,20 @@ interface UploadFormModalProps {
 const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [fileName, setFileName] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: submitLog,
+    mutationFn: async (theFile: File) => {
+      if (!selectedChildId) {
+        throw new Error("No child selected.");
+      }
+      const { publicUrl, fileName } = await uploadDocument(theFile);
+      const fullDescription = `Document: ${fileName}\nURL: ${publicUrl}\n\n${description}`;
+      return submitLog({ title, description: fullDescription, type: 'document', childId: selectedChildId });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
       toast.success("Document uploaded and analyzed!");
@@ -36,31 +45,34 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
     },
     onError: (error) => {
       console.error("Failed to submit document:", error);
-      toast.error("Failed to upload document. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to upload document. Please try again.");
     }
   });
 
   const handleClose = () => {
     onOpenChange(false);
+    setTitle('');
+    setDescription('');
+    setFile(null);
   };
 
-  const handleFileSelect = () => {
-    // Simulate file selection
-    setFileName('school_incident_report.pdf');
-    toast.info("Simulated file selection: school_incident_report.pdf");
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+        setFile(selectedFile);
+    }
+  };
+
+  const handleTriggerFileSelect = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSave = () => {
-    if (!title || !description || !fileName) {
+    if (!title || !description || !file) {
       toast.warning("Please fill out all fields and select a file.");
       return;
     }
-    if (!selectedChildId) {
-      toast.error("No child selected. Cannot save log.");
-      return;
-    }
-    const fullDescription = `Document: ${fileName}\n\n${description}`;
-    mutation.mutate({ title, description: fullDescription, type: 'document', childId: selectedChildId });
+    mutation.mutate(file);
   };
 
   return (
@@ -68,7 +80,7 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
       <DialogHeader>
         <DialogTitle>Upload a Document</DialogTitle>
         <DialogDescription>
-          Upload a school form, doctor's report, or any other document. We'll simulate analyzing it and add it to the timeline.
+          Upload a school form, doctor's report, or any other document. It will be stored securely and added to the timeline.
         </DialogDescription>
       </DialogHeader>
       
@@ -87,18 +99,25 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
           disabled={mutation.isPending}
         />
         <div>
-          {fileName ? (
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,image/*"
+          />
+          {file ? (
             <div className="flex items-center justify-between p-3 border rounded-md bg-muted">
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                <span className="text-sm font-medium">{fileName}</span>
+              <div className="flex items-center gap-2 overflow-hidden">
+                <FileText className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm font-medium truncate">{file.name}</span>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => setFileName('')} disabled={mutation.isPending}>Change</Button>
+              <Button size="sm" variant="ghost" onClick={() => setFile(null)} disabled={mutation.isPending}>Change</Button>
             </div>
           ) : (
-            <Button variant="outline" className="w-full" onClick={handleFileSelect} disabled={mutation.isPending}>
+            <Button variant="outline" className="w-full" onClick={handleTriggerFileSelect} disabled={mutation.isPending}>
               <Upload className="mr-2 h-4 w-4" />
-              Select File (Simulated)
+              Select File
             </Button>
           )}
         </div>
@@ -106,7 +125,7 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
 
       <DialogFooter>
         <Button variant="ghost" onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSave} disabled={mutation.isPending || !title || !description || !fileName}>
+        <Button onClick={handleSave} disabled={mutation.isPending || !title || !description || !file}>
           {mutation.isPending ? 'Saving...' : (
             <>
               <Save className="mr-2 h-4 w-4" />
@@ -120,4 +139,3 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
 };
 
 export default UploadFormModal;
-
