@@ -107,7 +107,7 @@ export const submitLog = async (
     summary_for_teacher,
     summary_for_doctor,
     tags,
-    emotionScore,
+    emotion_score: emotionScore,
     audio_url,
   };
 
