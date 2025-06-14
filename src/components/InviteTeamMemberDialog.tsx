@@ -54,7 +54,7 @@ const InviteTeamMemberDialog = ({ onOpenChange, childId }: InviteTeamMemberDialo
   });
 
   const mutation = useMutation<Awaited<ReturnType<typeof createInvitation>>, Error, FormValues>({
-    mutationFn: (values) => createInvitation({ ...values, childId }),
+    mutationFn: (values: FormValues) => createInvitation({ ...values, childId }),
     onSuccess: () => {
       toast({
         title: 'Invitation Sent!',
