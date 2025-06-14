@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { mockLogs } from '@/data/mockLogs.tsx';
 import { mockChildren } from '@/data/mockChildren';
 import { LogEntry, Child } from '@/types';
-import { Mic, UploadCloud, Languages } from 'lucide-react';
+import { Mic, UploadCloud, Languages, BrainCircuit } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
@@ -55,10 +54,15 @@ const Dashboard = () => {
 
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               <Button size="lg" variant="outline"><Mic /> Log Voice Note</Button>
               <Button size="lg" variant="outline"><UploadCloud /> Upload Form</Button>
               <Button size="lg" variant="outline"><Languages /> Translate Message</Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/assistant">
+                  <BrainCircuit /> Ask AI Assistant
+                </Link>
+              </Button>
             </div>
           </div>
 
