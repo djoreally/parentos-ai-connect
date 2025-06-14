@@ -8,9 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { mockLogs } from '@/data/mockLogs.tsx';
 import { LogEntry } from '@/types';
-import { PlusCircle, Baby } from 'lucide-react';
+import { PlusCircle, Baby, Mic, UploadCloud, Languages } from 'lucide-react';
+import ChildProfileCard from '@/components/ChildProfileCard';
 
-const Index = () => {
+const Dashboard = () => {
   const [logs, setLogs] = useState<LogEntry[]>(mockLogs || []);
   const [newLogTitle, setNewLogTitle] = useState('');
   const [newLogDescription, setNewLogDescription] = useState('');
@@ -43,42 +44,55 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 md:px-8 pb-12">
-        <div className="grid gap-12 md:grid-cols-3">
-          <div className="md:col-span-2 space-y-6">
-            <h2 className="text-xl font-semibold text-foreground">Child's Timeline</h2>
-            {logs.map(log => (
-              <LogCard key={log.id} log={log} />
-            ))}
+        <div className="space-y-8">
+          <ChildProfileCard />
+
+          <div>
+            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Button size="lg" variant="outline"><Mic /> Log Voice Note</Button>
+              <Button size="lg" variant="outline"><UploadCloud /> Upload Form</Button>
+              <Button size="lg" variant="outline"><Languages /> Translate Message</Button>
+            </div>
           </div>
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-foreground">Log a New Event</h2>
-            <Card>
-              <CardHeader>
-                <CardTitle>What's happening?</CardTitle>
-                <CardDescription>
-                  Log anything—a behavior, a feeling, a question for the doctor.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleAddLog} className="space-y-4">
-                  <Input
-                    placeholder="Title (e.g., 'Tummy ache after lunch')"
-                    value={newLogTitle}
-                    onChange={(e) => setNewLogTitle(e.target.value)}
-                  />
-                  <Textarea
-                    placeholder="Describe what happened..."
-                    value={newLogDescription}
-                    onChange={(e) => setNewLogDescription(e.target.value)}
-                    rows={5}
-                  />
-                  <Button type="submit" className="w-full">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add to Timeline
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+
+          <div className="grid gap-12 md:grid-cols-3">
+            <div className="md:col-span-2 space-y-6">
+              <h2 className="text-xl font-semibold text-foreground">Child's Timeline</h2>
+              {logs.map(log => (
+                <LogCard key={log.id} log={log} />
+              ))}
+            </div>
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold text-foreground">Log a New Event</h2>
+              <Card>
+                <CardHeader>
+                  <CardTitle>What's happening?</CardTitle>
+                  <CardDescription>
+                    Log anything—a behavior, a feeling, a question for the doctor.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleAddLog} className="space-y-4">
+                    <Input
+                      placeholder="Title (e.g., 'Tummy ache after lunch')"
+                      value={newLogTitle}
+                      onChange={(e) => setNewLogTitle(e.target.value)}
+                    />
+                    <Textarea
+                      placeholder="Describe what happened..."
+                      value={newLogDescription}
+                      onChange={(e) => setNewLogDescription(e.target.value)}
+                      rows={5}
+                    />
+                    <Button type="submit" className="w-full">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add to Timeline
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </main>
@@ -86,4 +100,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
