@@ -33,7 +33,7 @@ const NewLogForm = ({ selectedChildId }: { selectedChildId?: string }) => {
     e.preventDefault();
     if (!title || !description || mutation.isPending || !selectedChildId) return;
 
-    mutation.mutate({ title, description, childId: selectedChildId });
+    mutation.mutate({ title, description, childId: selectedChildId, type: 'text' });
   };
 
   return (
@@ -76,3 +76,4 @@ const NewLogForm = ({ selectedChildId }: { selectedChildId?: string }) => {
 };
 
 export default NewLogForm;
+

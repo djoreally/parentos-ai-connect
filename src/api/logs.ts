@@ -19,7 +19,8 @@ export const getLogs = async (childId: string): Promise<LogEntry[]> => {
   }
   
   console.log("Supabase responded with logs:", data);
-  return (data as LogEntry[]) || [];
+  // Cast to unknown first to satisfy TypeScript's stricter type checking
+  return (data as unknown as LogEntry[]) || [];
 };
 
 
@@ -80,10 +81,10 @@ const generateAiSummaries = (title: string, description: string) => {
 
 // This is a mock API function that simulates submitting a new log to a server.
 export const submitLog = async (
-  logData: { title: string; description: string; childId: string; }
+  logData: { title: string; description: string; childId: string; type: LogEntry['type']; }
 ): Promise<LogEntry> => {
   console.log("Submitting log to Supabase:", logData);
-  const { title, description, childId } = logData;
+  const { title, description, childId, type } = logData;
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated to submit log");
@@ -95,7 +96,7 @@ export const submitLog = async (
     child_id: childId,
     user_id: user.id,
     author: 'Parent' as const, // For now, we assume the parent is always the author.
-    type: 'text' as const,
+    type, // Use the type from logData
     original_entry: { title, description },
     summary_for_teacher,
     summary_for_doctor,
@@ -115,5 +116,7 @@ export const submitLog = async (
   }
   
   console.log("Supabase responded with new log:", newLog);
-  return newLog as LogEntry;
+  // Cast to unknown first to satisfy TypeScript's stricter type checking
+  return newLog as unknown as LogEntry;
 };
+

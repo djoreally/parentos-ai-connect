@@ -17,9 +17,10 @@ import { submitLog } from '@/api/logs';
 
 interface UploadFormModalProps {
   onOpenChange: (open: boolean) => void;
+  selectedChildId?: string;
 }
 
-const UploadFormModal = ({ onOpenChange }: UploadFormModalProps) => {
+const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [fileName, setFileName] = useState('');
@@ -29,7 +30,7 @@ const UploadFormModal = ({ onOpenChange }: UploadFormModalProps) => {
   const mutation = useMutation({
     mutationFn: submitLog,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['logs'] });
+      queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
       toast.success("Document uploaded and analyzed!");
       handleClose();
     },
@@ -54,8 +55,12 @@ const UploadFormModal = ({ onOpenChange }: UploadFormModalProps) => {
       toast.warning("Please fill out all fields and select a file.");
       return;
     }
+    if (!selectedChildId) {
+      toast.error("No child selected. Cannot save log.");
+      return;
+    }
     const fullDescription = `Document: ${fileName}\n\n${description}`;
-    mutation.mutate({ title, description: fullDescription, type: 'document' });
+    mutation.mutate({ title, description: fullDescription, type: 'document', childId: selectedChildId });
   };
 
   return (
@@ -115,3 +120,4 @@ const UploadFormModal = ({ onOpenChange }: UploadFormModalProps) => {
 };
 
 export default UploadFormModal;
+

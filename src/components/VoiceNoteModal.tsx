@@ -14,9 +14,10 @@ import { submitLog } from '@/api/logs';
 
 interface VoiceNoteModalProps {
   onOpenChange: (open: boolean) => void;
+  selectedChildId?: string;
 }
 
-const VoiceNoteModal = ({ onOpenChange }: VoiceNoteModalProps) => {
+const VoiceNoteModal = ({ onOpenChange, selectedChildId }: VoiceNoteModalProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [hasRecorded, setHasRecorded] = useState(false);
@@ -26,7 +27,7 @@ const VoiceNoteModal = ({ onOpenChange }: VoiceNoteModalProps) => {
   const mutation = useMutation({
     mutationFn: submitLog,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['logs'] });
+      queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
       toast.success("Voice note saved & interpreted for others!");
       handleClose();
     },
@@ -66,9 +67,13 @@ const VoiceNoteModal = ({ onOpenChange }: VoiceNoteModalProps) => {
   };
 
   const handleSave = () => {
+    if (!selectedChildId) {
+      toast.error("No child selected. Cannot save log.");
+      return;
+    }
     const title = `Voice Note - ${new Date().toLocaleString()}`;
     const description = `A voice note was recorded for ${recordingTime} seconds. The transcript would contain keywords like 'sad' or 'happy tummy'.`;
-    mutation.mutate({ title, description, type: 'voice' });
+    mutation.mutate({ title, description, type: 'voice', childId: selectedChildId });
   };
   
   const handleDiscard = () => {

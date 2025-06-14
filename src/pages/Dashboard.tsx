@@ -82,16 +82,16 @@ const Dashboard = () => {
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               <Dialog open={isVoiceModalOpen} onOpenChange={setIsVoiceModalOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" variant="outline"><Mic /> Log Voice Note</Button>
+                  <Button size="lg" variant="outline" disabled={!selectedChildId}><Mic /> Log Voice Note</Button>
                 </DialogTrigger>
-                <VoiceNoteModal onOpenChange={setIsVoiceModalOpen} />
+                <VoiceNoteModal onOpenChange={setIsVoiceModalOpen} selectedChildId={selectedChildId} />
               </Dialog>
 
               <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
                 <DialogTrigger asChild>
-                  <Button size="lg" variant="outline"><UploadCloud /> Upload Form</Button>
+                  <Button size="lg" variant="outline" disabled={!selectedChildId}><UploadCloud /> Upload Form</Button>
                 </DialogTrigger>
-                <UploadFormModal onOpenChange={setIsUploadModalOpen} />
+                <UploadFormModal onOpenChange={setIsUploadModalOpen} selectedChildId={selectedChildId} />
               </Dialog>
 
               <Dialog open={isTranslateModalOpen} onOpenChange={setIsTranslateModalOpen}>
@@ -143,3 +143,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
