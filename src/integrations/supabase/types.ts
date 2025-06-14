@@ -9,7 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      children: {
+        Row: {
+          ai_summary: string | null
+          allergies: string[] | null
+          avatar_url: string | null
+          created_at: string
+          dob: string
+          id: string
+          medications: string[] | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          allergies?: string[] | null
+          avatar_url?: string | null
+          created_at?: string
+          dob: string
+          id?: string
+          medications?: string[] | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          ai_summary?: string | null
+          allergies?: string[] | null
+          avatar_url?: string | null
+          created_at?: string
+          dob?: string
+          id?: string
+          medications?: string[] | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      logs: {
+        Row: {
+          author: Database["public"]["Enums"]["author_role"]
+          child_id: string
+          created_at: string
+          emotion_score: number | null
+          id: string
+          original_entry: Json
+          summary_for_doctor: string | null
+          summary_for_teacher: string | null
+          tags: string[] | null
+          timestamp: string
+          type: Database["public"]["Enums"]["log_type"]
+          user_id: string
+        }
+        Insert: {
+          author: Database["public"]["Enums"]["author_role"]
+          child_id: string
+          created_at?: string
+          emotion_score?: number | null
+          id?: string
+          original_entry: Json
+          summary_for_doctor?: string | null
+          summary_for_teacher?: string | null
+          tags?: string[] | null
+          timestamp?: string
+          type: Database["public"]["Enums"]["log_type"]
+          user_id: string
+        }
+        Update: {
+          author?: Database["public"]["Enums"]["author_role"]
+          child_id?: string
+          created_at?: string
+          emotion_score?: number | null
+          id?: string
+          original_entry?: Json
+          summary_for_doctor?: string | null
+          summary_for_teacher?: string | null
+          tags?: string[] | null
+          timestamp?: string
+          type?: Database["public"]["Enums"]["log_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +106,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      author_role: "Parent" | "Teacher" | "Doctor"
+      log_type: "text" | "voice" | "document"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +222,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      author_role: ["Parent", "Teacher", "Doctor"],
+      log_type: ["text", "voice", "document"],
+    },
   },
 } as const

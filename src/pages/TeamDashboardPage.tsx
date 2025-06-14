@@ -1,14 +1,18 @@
 
 import Header from '@/components/Header';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockChildren } from '@/data/mockChildren';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import { Link } from 'react-router-dom';
 import { Child } from '@/types';
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getChildren } from '@/api/children';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const TeamDashboardPage = () => {
-    const [children] = useState<Child[]>(mockChildren || []);
+    const { data: children, isLoading } = useQuery<Child[]>({
+        queryKey: ['children'],
+        queryFn: getChildren,
+    });
 
     return (
         <div className="min-h-screen bg-background">
@@ -24,7 +28,13 @@ const TeamDashboardPage = () => {
 
                     <div>
                         <h2 className="text-xl font-semibold text-foreground mb-4">Your Connected Children</h2>
-                        {children.length > 0 ? (
+                        {isLoading ? (
+                             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                <Skeleton className="h-48 w-full" />
+                                <Skeleton className="h-48 w-full" />
+                                <Skeleton className="h-48 w-full" />
+                             </div>
+                        ) : children && children.length > 0 ? (
                             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                                 {children.map(child => (
                                     <Link key={child.id} to={`/child/${child.id}`} className="block rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">

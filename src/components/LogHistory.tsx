@@ -45,10 +45,10 @@ const LogHistory = ({ logs }: LogHistoryProps) => {
     const healthTags = ['anxiety', 'sleep', 'health'];
     const educationTags = ['school', 'social', 'focus'];
 
-    const healthLogs = logs.filter(log => log.tags.some(tag => healthTags.includes(tag)));
+    const healthLogs = logs.filter(log => log.tags?.some(tag => healthTags.includes(tag)));
     const educationLogs = logs.filter(log => {
-      const hasEducationTag = log.tags.some(tag => educationTags.includes(tag));
-      const hasHealthTag = log.tags.some(tag => healthTags.includes(tag));
+      const hasEducationTag = log.tags?.some(tag => educationTags.includes(tag));
+      const hasHealthTag = log.tags?.some(tag => healthTags.includes(tag));
       return hasEducationTag && !hasHealthTag;
     });
     const generalLogs = logs.filter(log => !healthLogs.find(l => l.id === log.id) && !educationLogs.find(l => l.id === log.id));

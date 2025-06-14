@@ -1,6 +1,5 @@
 
 import { useParams, Link } from 'react-router-dom';
-import { mockChildren } from '@/data/mockChildren';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Header from '@/components/Header';
@@ -10,20 +9,41 @@ import { Badge } from '@/components/ui/badge';
 import NotFound from './NotFound';
 import { useQuery } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
+import { getChildById } from '@/api/children';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmotionTimelineChart from '@/components/EmotionTimelineChart';
 import LogHistory from '@/components/LogHistory';
 
 const ChildProfilePage = () => {
   const { childId } = useParams<{ childId: string }>();
-  const child = mockChildren.find(c => c.id === Number(childId));
 
-  const { data: logs, isLoading, isError } = useQuery({
-    queryKey: ['logs', childId],
-    queryFn: getLogs,
-    // In a real app, we'd filter logs by childId in the API
-    // For now, we use all mock logs for the selected child
+  const { data: child, isLoading: isLoadingChild } = useQuery({
+    queryKey: ['child', childId],
+    queryFn: () => getChildById(childId!),
+    enabled: !!childId,
   });
+
+  const { data: logs, isLoading: isLoadingLogs, isError } = useQuery({
+    queryKey: ['logs', childId],
+    queryFn: () => getLogs(childId!),
+    enabled: !!childId,
+  });
+
+  if (isLoadingChild) {
+    return (
+        <div className="min-h-screen bg-background animate-fade-in">
+            <Header />
+            <main className="container mx-auto px-4 md:px-8 pb-12">
+                <Skeleton className="h-10 w-48 mb-6" />
+                <div className="space-y-8">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-[400px] w-full" />
+                    <Skeleton className="h-[300px] w-full" />
+                </div>
+            </main>
+        </div>
+    )
+  }
 
   if (!child) {
     return <NotFound />;
@@ -46,25 +66,25 @@ const ChildProfilePage = () => {
             <CardHeader>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                     <Avatar className="h-28 w-28 border">
-                        <AvatarImage src={child.avatarUrl} alt={`${child.name}'s profile picture`} />
+                        <AvatarImage src={child.avatar_url || undefined} alt={`${child.name}'s profile picture`} />
                         <AvatarFallback>{child.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">
                         <CardTitle className="text-4xl font-bold">{child.name}</CardTitle>
-                        <CardDescription className="text-base">Date of Birth: {new Date(child.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</CardDescription>
+                        <CardDescription className="text-base">Date of Birth: {new Date(child.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</CardDescription>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="space-y-6 pt-4">
               <div>
                 <h3 className="text-xl font-semibold mb-2">AI Summary</h3>
-                <p className="text-muted-foreground text-base">{child.aiSummary}</p>
+                <p className="text-muted-foreground text-base">{child.ai_summary}</p>
               </div>
                <div className="grid md:grid-cols-2 gap-6">
                     <div>
                         <h3 className="text-xl font-semibold mb-3">Allergies</h3>
                         <div className="flex flex-wrap gap-2">
-                        {child.allergies.length > 0 && child.allergies[0] !== 'None' ? (
+                        {child.allergies && child.allergies.length > 0 && child.allergies[0] !== 'None' ? (
                             child.allergies.map(allergy => <Badge key={allergy} variant="secondary" className="text-base py-1 px-3">{allergy}</Badge>)
                         ) : (
                             <p className="text-muted-foreground">No known allergies.</p>
@@ -73,7 +93,7 @@ const ChildProfilePage = () => {
                     </div>
                     <div>
                         <h3 className="text-xl font-semibold mb-3">Current Medications</h3>
-                        {child.medications.length > 0 ? (
+                        {child.medications && child.medications.length > 0 ? (
                         <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                             {child.medications.map(med => <li key={med} className="text-base">{med}</li>)}
                         </ul>
@@ -85,7 +105,7 @@ const ChildProfilePage = () => {
             </CardContent>
           </Card>
           
-          {isLoading && (
+          {isLoadingLogs && (
             <>
               <Skeleton className="h-[400px] w-full" />
               <Skeleton className="h-[300px] w-full" />

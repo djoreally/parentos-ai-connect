@@ -9,7 +9,7 @@ import { PlusCircle } from 'lucide-react';
 import { submitLog } from '@/api/logs';
 import { toast } from 'sonner';
 
-const NewLogForm = () => {
+const NewLogForm = ({ selectedChildId }: { selectedChildId?: string }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   
@@ -18,7 +18,7 @@ const NewLogForm = () => {
   const mutation = useMutation({
     mutationFn: submitLog,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['logs'] });
+      queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
       toast.success("New event logged successfully!");
       setTitle('');
       setDescription('');
@@ -31,9 +31,9 @@ const NewLogForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || mutation.isPending) return;
+    if (!title || !description || mutation.isPending || !selectedChildId) return;
 
-    mutation.mutate({ title, description });
+    mutation.mutate({ title, description, childId: selectedChildId });
   };
 
   return (
@@ -59,7 +59,7 @@ const NewLogForm = () => {
             rows={5}
             disabled={mutation.isPending}
           />
-          <Button type="submit" className="w-full" disabled={mutation.isPending || !title || !description}>
+          <Button type="submit" className="w-full" disabled={mutation.isPending || !title || !description || !selectedChildId}>
             {mutation.isPending ? (
               'Adding...'
             ) : (

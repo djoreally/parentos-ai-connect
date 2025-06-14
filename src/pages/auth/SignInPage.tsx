@@ -7,23 +7,43 @@ import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const SignInPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate API call for authentication
-    console.log('Simulating sign-in for:', email);
-     toast({
-      title: "Welcome back!",
-      description: "You have been successfully signed in.",
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
-    // Redirect to dashboard
-    navigate('/dashboard');
+    setIsLoading(false);
+
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "You have been successfully signed in.",
+      });
+      
+      const userRole = localStorage.getItem('userRole');
+      if (!userRole) {
+        navigate('/select-role');
+      } else {
+        navigate('/dashboard');
+      }
+    }
   };
 
   return (
@@ -43,6 +63,7 @@ const SignInPage = () => {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -53,11 +74,14 @@ const SignInPage = () => {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full">Sign In</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
             <div className="text-center text-sm">
               Don't have an account?{' '}
               <Link to="/register" className="underline">

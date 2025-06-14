@@ -1,15 +1,25 @@
+
+import { supabase } from '@/integrations/supabase/client';
 import { LogEntry } from '@/types';
-import { mockLogs } from '@/data/mockLogs';
 
 // This function simulates fetching logs from an API.
-export const getLogs = async (): Promise<LogEntry[]> => {
-  console.log("Fetching logs from mock API...");
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  // Return a copy to avoid direct mutation issues with React strict mode
-  const sortedLogs = [...mockLogs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  console.log("Mock API responded with logs:", sortedLogs);
-  return sortedLogs;
+export const getLogs = async (childId: string): Promise<LogEntry[]> => {
+  console.log(`Fetching logs from Supabase for child: ${childId}`);
+  if (!childId) return [];
+  
+  const { data, error } = await supabase
+    .from('logs')
+    .select('*')
+    .eq('child_id', childId)
+    .order('timestamp', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching logs:', error);
+    throw error;
+  }
+  
+  console.log("Supabase responded with logs:", data);
+  return (data as LogEntry[]) || [];
 };
 
 
@@ -70,36 +80,40 @@ const generateAiSummaries = (title: string, description: string) => {
 
 // This is a mock API function that simulates submitting a new log to a server.
 export const submitLog = async (
-  logData: { title: string; description: string; type?: 'text' | 'voice' | 'document' }
+  logData: { title: string; description: string; childId: string; }
 ): Promise<LogEntry> => {
-  console.log("Submitting log to mock API:", logData);
+  console.log("Submitting log to Supabase:", logData);
+  const { title, description, childId } = logData;
 
-  const { title, description } = logData;
-
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated to submit log");
+  
   // Generate AI-powered summaries, tags and emotion score
   const { summary_for_teacher, summary_for_doctor, tags, emotionScore } = generateAiSummaries(title, description);
 
-  const newLog: LogEntry = {
-    id: Date.now(),
-    timestamp: new Date().toISOString(),
-    author: 'Parent', // For now, we assume the parent is always the author of new logs.
-    type: logData.type || 'text',
-    original_entry: {
-      title: title,
-      description: description,
-    },
+  const newLogPayload = {
+    child_id: childId,
+    user_id: user.id,
+    author: 'Parent' as const, // For now, we assume the parent is always the author.
+    type: 'text' as const,
+    original_entry: { title, description },
     summary_for_teacher,
     summary_for_doctor,
     tags,
     emotionScore,
   };
+
+  const { data: newLog, error } = await supabase
+    .from('logs')
+    .insert(newLogPayload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error submitting log:", error);
+    throw error;
+  }
   
-  console.log("Mock API responded with new log:", newLog);
-  // We'll prepend to the mockLogs array to simulate a database update.
-  // In a real app, you wouldn't do this on the client.
-  mockLogs.unshift(newLog); 
-  return newLog;
+  console.log("Supabase responded with new log:", newLog);
+  return newLog as LogEntry;
 };

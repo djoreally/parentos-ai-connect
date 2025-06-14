@@ -1,16 +1,20 @@
 
 export type Child = {
-  id: number;
+  id: string; // Changed from number
+  user_id: string;
   name: string;
-  avatarUrl: string;
-  aiSummary: string;
+  avatar_url: string | null;
+  ai_summary: string | null;
   dob: string;
-  allergies: string[];
-  medications: string[];
+  allergies: string[] | null;
+  medications: string[] | null;
+  created_at: string;
 };
 
 export type LogEntry = {
-  id: number;
+  id: string; // Changed from number
+  child_id: string;
+  user_id: string;
   timestamp: string;
   author: 'Parent' | 'Teacher' | 'Doctor';
   type: 'text' | 'voice' | 'document';
@@ -18,8 +22,8 @@ export type LogEntry = {
     title: string;
     description: string;
   };
-  summary_for_teacher: string;
-  summary_for_doctor: string;
-  tags: string[];
-  emotionScore?: number; // 1-5 scale: 1=very negative, 5=very positive
+  summary_for_teacher: string | null; // Can be null
+  summary_for_doctor: string | null; // Can be null
+  tags: string[] | null; // Can be null
+  emotionScore?: number | null; // Can be null
 };

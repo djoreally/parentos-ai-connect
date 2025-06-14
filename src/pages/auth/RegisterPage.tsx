@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -14,8 +15,9 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast({
@@ -25,14 +27,29 @@ const RegisterPage = () => {
       });
       return;
     }
-    // Simulate API call for user creation
-    console.log('Simulating account creation for:', email);
-    toast({
-      title: "Success!",
-      description: "Your account has been created.",
+    setIsLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+      }
     });
-    // Redirect to role selection
-    navigate('/select-role');
+    setIsLoading(false);
+
+    if (error) {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success!",
+        description: "Account created. Please check your email to confirm your account.",
+      });
+      navigate('/login');
+    }
   };
 
   return (
@@ -52,6 +69,7 @@ const RegisterPage = () => {
                 required 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)} 
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -62,6 +80,7 @@ const RegisterPage = () => {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-2">
@@ -72,11 +91,14 @@ const RegisterPage = () => {
                 required 
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full">Create Account</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </Button>
             <div className="text-center text-sm">
               Already have an account?{' '}
               <Link to="/login" className="underline">

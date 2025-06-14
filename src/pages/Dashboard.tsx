@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockChildren } from '@/data/mockChildren';
 import { LogEntry, Child } from '@/types';
 import { Mic, UploadCloud, Languages, BrainCircuit } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
@@ -13,6 +12,7 @@ import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
 import { useQuery } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
+import { getChildren } from '@/api/children';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import VoiceNoteModal from '@/components/VoiceNoteModal';
@@ -21,18 +21,30 @@ import TranslateMessageModal from '@/components/TranslateMessageModal';
 import AiInsights from '@/components/AiInsights';
 
 const Dashboard = () => {
-  const { data: logs, isLoading, isError } = useQuery<LogEntry[]>({
-    queryKey: ['logs'],
-    queryFn: getLogs,
+  const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
+    queryKey: ['children'],
+    queryFn: getChildren,
   });
 
-  const [children] = useState<Child[]>(mockChildren || []);
-  const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.id || 0);
+  const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
+  
+  useEffect(() => {
+    if (children && children.length > 0 && !selectedChildId) {
+      setSelectedChildId(children[0].id);
+    }
+  }, [children, selectedChildId]);
+
+  const { data: logs, isLoading: isLoadingLogs, isError } = useQuery<LogEntry[]>({
+    queryKey: ['logs', selectedChildId],
+    queryFn: () => getLogs(selectedChildId!),
+    enabled: !!selectedChildId,
+  });
+
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
 
-  const selectedChild = children.find(child => child.id === selectedChildId);
+  const selectedChild = children?.find(child => child.id === selectedChildId);
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,12 +52,14 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 md:px-8 pb-12">
         <div className="space-y-8">
           
-          {children.length > 0 && selectedChild ? (
+          {isLoadingChildren ? (
+            <Skeleton className="h-48 w-full" />
+          ) : children && children.length > 0 && selectedChild ? (
             <>
               <ChildSelector 
                 children={children}
-                selectedChildId={selectedChildId}
-                onSelectChild={(id) => setSelectedChildId(Number(id))}
+                selectedChildId={selectedChildId!}
+                onSelectChild={(id) => setSelectedChildId(id)}
               />
               <Link to={`/child/${selectedChild.id}`} className="block rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
                 <ChildProfileCard child={selectedChild} />
@@ -98,7 +112,7 @@ const Dashboard = () => {
           <div className="grid gap-12 md:grid-cols-3">
             <div className="md:col-span-2 space-y-6">
               <h2 className="text-xl font-semibold text-foreground">Child's Timeline</h2>
-              {isLoading && (
+              {isLoadingLogs && (
                 <div className="space-y-4">
                   <Skeleton className="h-24 w-full" />
                   <Skeleton className="h-24 w-full" />
@@ -119,7 +133,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-6">
               {logs && logs.length > 0 && <AiInsights logs={logs} />}
-              <NewLogForm />
+              <NewLogForm selectedChildId={selectedChildId} />
             </div>
           </div>
         </div>

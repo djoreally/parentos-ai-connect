@@ -15,12 +15,12 @@ const ChildProfileCard = ({ child }: ChildProfileCardProps) => {
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src={child.avatarUrl} alt={`${child.name}'s profile picture`} />
+          <AvatarImage src={child.avatar_url || undefined} alt={`${child.name}'s profile picture`} />
           <AvatarFallback>{child.name.substring(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">
-            AI Summary: {child.aiSummary}
+            AI Summary: {child.ai_summary}
           </p>
         </div>
       </CardContent>
