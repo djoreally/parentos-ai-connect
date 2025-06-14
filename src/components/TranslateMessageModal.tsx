@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowRightLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TranslateMessageModalProps {
   onOpenChange: (open: boolean) => void;
@@ -27,7 +28,7 @@ const TranslateMessageModal = ({ onOpenChange }: TranslateMessageModalProps) => 
     onOpenChange(false);
   };
   
-  const handleTranslate = () => {
+  const handleTranslate = async () => {
     if (!inputText) {
       toast.warning("Please enter some text to translate.");
       return;
@@ -35,20 +36,23 @@ const TranslateMessageModal = ({ onOpenChange }: TranslateMessageModalProps) => 
     setIsTranslating(true);
     setTranslatedText('');
 
-    // Simulate API call
-    setTimeout(() => {
-      let result = '';
-      if (targetLanguage === 'spanish') {
-        result = `(Traducción simulada al español)\n\n${inputText}`;
-      } else if (targetLanguage === 'french') {
-        result = `(Traduction simulée en français)\n\n${inputText}`;
-      } else {
-        result = `(Simulated translation to ${targetLanguage})\n\n${inputText}`;
+    try {
+      const { data, error } = await supabase.functions.invoke('translate-text', {
+          body: { text: inputText, targetLanguage },
+      });
+
+      if (error) {
+          throw new Error(error.message);
       }
-      setTranslatedText(result);
-      setIsTranslating(false);
+      
+      setTranslatedText(data.translatedText);
       toast.success("Translation complete!");
-    }, 1000);
+    } catch (error: any) {
+        console.error("Translation error:", error);
+        toast.error(`Translation failed: ${error.message}`);
+    } finally {
+        setIsTranslating(false);
+    }
   };
 
   return (
@@ -56,7 +60,7 @@ const TranslateMessageModal = ({ onOpenChange }: TranslateMessageModalProps) => 
       <DialogHeader>
         <DialogTitle>Translate a Message</DialogTitle>
         <DialogDescription>
-          Quickly translate messages from teachers or doctors. This is a simulation.
+          Translate messages from teachers or doctors using Google Translate.
         </DialogDescription>
       </DialogHeader>
       

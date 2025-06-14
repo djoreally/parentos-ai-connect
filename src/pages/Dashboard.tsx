@@ -106,8 +106,8 @@ const Dashboard = () => {
                 <TranslateMessageModal onOpenChange={setIsTranslateModalOpen} />
               </Dialog>
               
-              <Button asChild size="lg" variant="outline">
-                <Link to="/assistant">
+              <Button asChild size="lg" variant="outline" disabled={!selectedChildId}>
+                <Link to={selectedChildId ? `/assistant?childId=${selectedChildId}` : '/assistant'}>
                   <BrainCircuit /> Ask AI Assistant
                 </Link>
               </Button>

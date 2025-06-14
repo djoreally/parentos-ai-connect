@@ -2,64 +2,37 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { LogEntry } from "@/types";
 import { BrainCircuit, TrendingDown, Users, BedDouble } from 'lucide-react';
-import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getAiInsights } from "@/api/ai";
+import { Skeleton } from "./ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AiInsightsProps {
   logs: LogEntry[];
 }
 
-type Insight = {
-  icon: React.ReactNode;
+const iconComponents: Record<string, React.ReactNode> = {
+  BedDouble: <BedDouble className="h-5 w-5" />,
+  TrendingDown: <TrendingDown className="h-5 w-5" />,
+  Users: <Users className="h-5 w-5" />,
+  BrainCircuit: <BrainCircuit className="h-5 w-5" />,
+};
+
+export type Insight = {
+  iconName: keyof typeof iconComponents;
   text: string;
   color: string;
 };
 
-// This is a mock analysis function. In a real app, this would be a complex backend service.
-const generateInsights = (logs: LogEntry[]): Insight[] => {
-  const insights: Insight[] = [];
-  
-  const anxietyLogs = logs.filter(log => log.tags.includes('anxiety'));
-  const sleepLogs = logs.filter(log => log.tags.includes('sleep'));
-  const schoolLogs = logs.filter(log => log.tags.includes('school'));
-  const socialLogs = logs.filter(log => log.tags.includes('social'));
-  
-  if (anxietyLogs.length > 0 && sleepLogs.length > 0) {
-    insights.push({
-      icon: <BedDouble className="h-5 w-5" />,
-      text: "Pattern Detected: Poor sleep seems linked to reports of anxiety. Consider a calming bedtime routine.",
-      color: "text-red-500",
-    });
-  }
-  
-  if (anxietyLogs.length > 0 && schoolLogs.some(l => l.original_entry.description.includes('transition'))) {
-     insights.push({
-      icon: <TrendingDown className="h-5 w-5" />,
-      text: "Correlation Found: Anxiety may be contributing to difficulty with transitions at school.",
-      color: "text-amber-600",
-    });
-  }
-
-  if (socialLogs.some(l => l.emotionScore && l.emotionScore >= 4)) {
-     insights.push({
-      icon: <Users className="h-5 w-5" />,
-      text: "Positive Trend: Structured social activities, like park visits, correlate with high positive mood scores.",
-      color: "text-green-600",
-    });
-  }
-
-  if (insights.length === 0) {
-     insights.push({
-      icon: <BrainCircuit className="h-5 w-5" />,
-      text: "Not enough data for deep insights yet. Keep logging to unlock patterns!",
-      color: "text-gray-500",
-    });
-  }
-
-  return insights;
-}
-
 const AiInsights = ({ logs }: AiInsightsProps) => {
-  const insights = useMemo(() => generateInsights(logs), [logs]);
+  const { data: insights, isLoading, isError } = useQuery({
+    queryKey: ['aiInsights', logs.map(l => l.id).join('-')],
+    queryFn: () => getAiInsights(logs),
+    enabled: logs.length > 0,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    retry: 1,
+  });
 
   return (
     <Card>
@@ -73,14 +46,31 @@ const AiInsights = ({ logs }: AiInsightsProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-4">
-          {insights.map((insight, index) => (
-            <li key={index} className={`flex items-start gap-3 ${insight.color}`}>
-              <div className="mt-1">{insight.icon}</div>
-              <p className="text-sm font-medium text-card-foreground">{insight.text}</p>
-            </li>
-          ))}
-        </ul>
+        {isLoading && (
+            <div className="space-y-4">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+            </div>
+        )}
+        {isError && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                    Could not generate AI insights at this time.
+                </AlertDescription>
+            </Alert>
+        )}
+        {insights && (
+            <ul className="space-y-4">
+            {insights.map((insight, index) => (
+                <li key={index} className={`flex items-start gap-3 ${insight.color}`}>
+                <div className="mt-1">{iconComponents[insight.iconName] || <BrainCircuit className="h-5 w-5" />}</div>
+                <p className="text-sm font-medium text-card-foreground">{insight.text}</p>
+                </li>
+            ))}
+            </ul>
+        )}
       </CardContent>
     </Card>
   );
