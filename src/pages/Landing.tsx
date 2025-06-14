@@ -17,7 +17,7 @@ const LandingPage = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <Button asChild size="lg">
-            <Link to="/signup">
+            <Link to="/register">
               Get Started for Free <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
