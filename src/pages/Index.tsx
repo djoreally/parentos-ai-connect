@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockLogs } from '@/data/mockLogs';
+import { mockLogs } from '@/data/mockLogs.tsx';
 import { LogEntry } from '@/types';
 import { PlusCircle, Baby } from 'lucide-react';
 
 const Index = () => {
-  const [logs, setLogs] = useState<LogEntry[]>(mockLogs);
+  const [logs, setLogs] = useState<LogEntry[]>(mockLogs || []);
   const [newLogTitle, setNewLogTitle] = useState('');
   const [newLogDescription, setNewLogDescription] = useState('');
 
