@@ -1,3 +1,4 @@
+
 import { LogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -40,7 +41,7 @@ const LogCard = ({ log }: LogCardProps) => {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
-          {log.tags.map(tag => (
+          {log.tags && log.tags.map(tag => (
             <Badge key={tag} variant="secondary" className="capitalize">{tag}</Badge>
           ))}
         </div>
@@ -59,6 +60,17 @@ const LogCard = ({ log }: LogCardProps) => {
                 <audio controls src={log.audio_url} className="w-full">
                   Your browser does not support the audio element.
                 </audio>
+              </div>
+            )}
+            {log.audio_url && log.type === 'document' && (
+              <div className="mb-4">
+                <p className="font-semibold mb-2">Attached Document:</p>
+                <Button variant="outline" asChild>
+                  <a href={log.audio_url} target="_blank" rel="noopener noreferrer">
+                    <FileText className="mr-2 h-4 w-4" />
+                    View Document
+                  </a>
+                </Button>
               </div>
             )}
             <p className="whitespace-pre-wrap">{log.original_entry.description}</p>

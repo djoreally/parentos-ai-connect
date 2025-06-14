@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -34,9 +33,15 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
       if (!selectedChildId) {
         throw new Error("No child selected.");
       }
-      const { publicUrl, fileName } = await uploadDocument(theFile);
-      const fullDescription = `Document: ${fileName}\nURL: ${publicUrl}\n\n${description}`;
-      return submitLog({ title, description: fullDescription, type: 'document', childId: selectedChildId });
+      const { publicUrl } = await uploadDocument(theFile);
+      
+      return submitLog({ 
+        title, 
+        description: description, 
+        type: 'document', 
+        childId: selectedChildId,
+        audio_url: publicUrl // We now store the URL in the dedicated field.
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
