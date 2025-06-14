@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { LogEntry, Child } from '@/types';
+import { LogEntry, Child, AppNotification } from '@/types';
 import { UploadCloud, Languages, BrainCircuit, UserPlus, MessageSquare } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
@@ -87,7 +87,7 @@ const Dashboard = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleNotificationClick = (notification: AppNotification) => {
     if (notification.type === 'new_message' && notification.child_id) {
       setSelectedChildId(notification.child_id);
       setIsChatModalOpen(true);

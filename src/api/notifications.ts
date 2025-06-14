@@ -1,8 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Notification } from '@/types';
+import { AppNotification } from '@/types';
 
-export const getNotifications = async (): Promise<Notification[]> => {
+export const getNotifications = async (): Promise<AppNotification[]> => {
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -12,10 +12,10 @@ export const getNotifications = async (): Promise<Notification[]> => {
     console.error('Error fetching notifications:', error);
     throw error;
   }
-  return data as Notification[];
+  return data as AppNotification[];
 };
 
-export const markNotificationAsRead = async (notificationId: string): Promise<Notification> => {
+export const markNotificationAsRead = async (notificationId: string): Promise<AppNotification> => {
   const { data, error } = await supabase
     .from('notifications')
     .update({ is_read: true })
@@ -27,10 +27,10 @@ export const markNotificationAsRead = async (notificationId: string): Promise<No
     console.error('Error marking notification as read:', error);
     throw error;
   }
-  return data as Notification;
+  return data as AppNotification;
 };
 
-export const markAllNotificationsAsRead = async (): Promise<Notification[]> => {
+export const markAllNotificationsAsRead = async (): Promise<AppNotification[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated");
 
@@ -45,5 +45,5 @@ export const markAllNotificationsAsRead = async (): Promise<Notification[]> => {
     console.error('Error marking all notifications as read:', error);
     throw error;
   }
-  return data as Notification[];
+  return data as AppNotification[];
 };

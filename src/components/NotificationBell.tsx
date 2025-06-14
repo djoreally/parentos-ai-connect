@@ -1,23 +1,22 @@
-
 import { useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '@/api/notifications';
-import { Notification } from '@/types';
+import { AppNotification } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface NotificationBellProps {
-  onNotificationClick?: (notification: Notification) => void;
+  onNotificationClick?: (notification: AppNotification) => void;
 }
 
 export default function NotificationBell({ onNotificationClick }: NotificationBellProps) {
   const queryClient = useQueryClient();
-  const { data: notifications } = useQuery<Notification[]>({
+  const { data: notifications } = useQuery<AppNotification[]>({
     queryKey: ['notifications'],
     queryFn: getNotifications,
   });
@@ -34,7 +33,7 @@ export default function NotificationBell({ onNotificationClick }: NotificationBe
         },
         (payload) => {
           console.log('New notification received!', payload);
-          const newNotification = payload.new as Notification;
+          const newNotification = payload.new as AppNotification;
           toast.info(newNotification.message);
           queryClient.invalidateQueries({ queryKey: ['notifications'] });
         }
@@ -70,7 +69,7 @@ export default function NotificationBell({ onNotificationClick }: NotificationBe
     },
   });
 
-  const handleItemClick = (notification: Notification) => {
+  const handleItemClick = (notification: AppNotification) => {
     if (!notification.is_read) {
       markAsReadMutation.mutate(notification.id);
     }

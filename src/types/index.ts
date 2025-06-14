@@ -1,4 +1,3 @@
-
 export type Child = {
   id: string; // Changed from number
   user_id: string;
@@ -38,7 +37,7 @@ export type Profile = {
   updated_at: string;
 };
 
-export type Notification = {
+export type AppNotification = {
   id: string;
   user_id: string;
   child_id: string;
