@@ -4,7 +4,8 @@ import LandingHeader from '@/components/LandingHeader';
 import LandingFooter from '@/components/LandingFooter';
 import FeatureCard from '@/components/FeatureCard';
 import TestimonialCard from '@/components/TestimonialCard';
-import { Users, Calendar, ChartLine, BrainCircuit } from 'lucide-react';
+import { Users, Calendar, ChartLine, BrainCircuit, Youtube } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const LandingPage = () => {
   const features = [
@@ -51,6 +52,21 @@ const LandingPage = () => {
     },
   ];
 
+  const faqs = [
+    {
+      question: "How is my child's data kept private and secure?",
+      answer: "We use state-of-the-art encryption and follow strict privacy protocols to ensure your data is always safe. Only authorized members of your care team can access the information. Our platform is designed to be compliant with privacy regulations like HIPAA.",
+    },
+    {
+      question: "Who can I invite to my child's care team?",
+      answer: "You can invite anyone you trust, including family members, teachers, therapists, and doctors. You have full control over who sees what information and can manage permissions for each team member.",
+    },
+    {
+      question: "What kind of support is available if I need help?",
+      answer: "We offer comprehensive support through our help center, email, and live chat. Our team is always ready to assist you with any questions or issues you may encounter.",
+    },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <LandingHeader />
@@ -81,6 +97,44 @@ const LandingPage = () => {
             <p className="text-foreground text-base font-normal leading-normal pb-3 pt-1 px-4">
               ParentOS bridges the communication gap between caregivers, providing a unified view of your child's development. Track progress, identify needs, and collaborate effectively to ensure your child thrives.
             </p>
+          </section>
+
+          {/* Visuals Section */}
+          <section className="px-4 py-10">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">See ParentOS in Action</h2>
+              <p className="text-foreground text-base font-normal leading-normal max-w-[720px]">
+                Explore how our intuitive interface brings all your child's information together in one place.
+              </p>
+              <div className="mt-8 w-full max-w-4xl">
+                <img 
+                  src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=1470&auto=format&fit=crop" 
+                  alt="ParentOS dashboard screenshot" 
+                  className="rounded-lg shadow-lg border border-border"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Onboarding Video Section */}
+          <section className="px-4 py-10 text-center">
+            <div className="flex justify-center items-center gap-2">
+              <Youtube className="h-6 w-6 text-primary" />
+              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">Watch How ParentOS Works</h2>
+            </div>
+            <p className="text-foreground text-base font-normal leading-normal my-4 max-w-[720px] mx-auto">
+              Discover how ParentOS can simplify communication and collaboration for your child's care team in this short video.
+            </p>
+            <div className="aspect-video max-w-4xl mx-auto bg-muted rounded-lg">
+              <iframe 
+                className="w-full h-full rounded-lg shadow-lg border border-border"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="ParentOS Explainer Video" 
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen>
+              </iframe>
+            </div>
           </section>
 
           {/* Key Features Section */}
@@ -118,6 +172,25 @@ const LandingPage = () => {
                   image={testimonial.image}
                 />
               ))}
+            </div>
+          </section>
+
+          {/* FAQ Section */}
+          <section id="faq" className="px-4 py-10">
+            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] text-center mb-8">
+              Frequently Asked Questions
+            </h2>
+            <div className="max-w-[720px] mx-auto">
+              <Accordion type="single" collapsible className="w-full">
+                {faqs.map((faq, index) => (
+                  <AccordionItem value={`item-${index+1}`} key={index}>
+                    <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-base text-muted-foreground">{faq.answer}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
           </section>
 

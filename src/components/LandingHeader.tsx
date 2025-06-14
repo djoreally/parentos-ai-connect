@@ -8,6 +8,7 @@ const LandingHeader = () => {
     { title: 'About', href: '#about' },
     { title: 'Features', href: '#features' },
     { title: 'Testimonials', href: '#testimonials' },
+    { title: 'FAQ', href: '#faq' },
     { title: 'Pricing', href: '#pricing' },
   ];
 
