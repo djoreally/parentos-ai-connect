@@ -19,29 +19,19 @@ export const logAuditEvent = async (
     target_id?: string;
   } = {}
 ) => {
-  const { details, target_entity, target_id } = options;
-
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    // For login failures, the user might not be available yet.
-    // The audit_logs table allows a null user_id to record these events.
-    const userId = user?.id ?? null;
-
-    // We can't get user's IP from the client-side, so we leave it null.
-    // This could be implemented via a custom edge function in the future.
-    const { error } = await supabase.from('audit_logs').insert({
-      user_id: userId,
-      action,
-      details,
-      target_entity,
-      target_id: target_id ?? userId, // Default target_id to the acting user if not specified
+    // Invoke the secure edge function to log the event
+    const { error } = await supabase.functions.invoke('log-audit-event', {
+      body: {
+        action,
+        ...options,
+      },
     });
 
     if (error) {
-      console.error('Failed to log audit event:', error);
+      console.error('Failed to log audit event via edge function:', error);
     }
   } catch (e) {
-    console.error('Error logging audit event:', e);
+    console.error('Error invoking audit event logger:', e);
   }
 };
