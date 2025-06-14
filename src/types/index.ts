@@ -20,4 +20,5 @@ export type LogEntry = {
   summary_for_teacher: string;
   summary_for_doctor: string;
   tags: string[];
+  emotionScore?: number; // 1-5 scale: 1=very negative, 5=very positive
 };

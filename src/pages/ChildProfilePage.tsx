@@ -8,10 +8,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import NotFound from './NotFound';
+import { useQuery } from '@tanstack/react-query';
+import { getLogs } from '@/api/logs';
+import { Skeleton } from '@/components/ui/skeleton';
+import EmotionTimelineChart from '@/components/EmotionTimelineChart';
+import LogHistory from '@/components/LogHistory';
 
 const ChildProfilePage = () => {
   const { childId } = useParams<{ childId: string }>();
   const child = mockChildren.find(c => c.id === Number(childId));
+
+  const { data: logs, isLoading, isError } = useQuery({
+    queryKey: ['logs', childId],
+    queryFn: getLogs,
+    // In a real app, we'd filter logs by childId in the API
+    // For now, we use all mock logs for the selected child
+  });
 
   if (!child) {
     return <NotFound />;
@@ -72,6 +84,32 @@ const ChildProfilePage = () => {
                </div>
             </CardContent>
           </Card>
+          
+          {isLoading && (
+            <>
+              <Skeleton className="h-[400px] w-full" />
+              <Skeleton className="h-[300px] w-full" />
+            </>
+          )}
+
+          {isError && (
+              <Card>
+                <CardHeader>
+                    <CardTitle>Error</CardTitle>
+                    <CardDescription>Could not load log history.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-destructive">There was a problem fetching the data. Please try again later.</p>
+                </CardContent>
+              </Card>
+          )}
+
+          {logs && (
+            <>
+              <EmotionTimelineChart logs={logs} />
+              <LogHistory logs={logs} />
+            </>
+          )}
         </div>
       </main>
     </div>
