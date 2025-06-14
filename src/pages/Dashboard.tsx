@@ -1,29 +1,18 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
-import LogCard from '@/components/LogCard';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { LogEntry, Child, AppNotification } from '@/types';
-import { UploadCloud, Languages, BrainCircuit, UserPlus, MessageSquare } from 'lucide-react';
-import ChildProfileCard from '@/components/ChildProfileCard';
-import ChildSelector from '@/components/ChildSelector';
+import { LogEntry, Child, AppNotification, Profile } from '@/types';
 import NewLogForm from '@/components/NewLogForm';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
 import { getChildren } from '@/api/children';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import UploadFormModal from '@/components/UploadFormModal';
-import TranslateMessageModal from '@/components/TranslateMessageModal';
-import AiInsights from '@/components/AiInsights';
 import { useAuth } from '@/contexts/AuthContext';
-import InviteTeamMemberDialog from '@/components/InviteTeamMemberDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import NotificationBell from '@/components/NotificationBell';
-import TeamChatDialog from '@/components/TeamChatDialog';
+import AiInsights from '@/components/AiInsights';
+import DashboardHeader from '@/components/dashboard/DashboardHeader';
+import QuickActions from '@/components/dashboard/QuickActions';
+import Timeline from '@/components/dashboard/Timeline';
 
 const Dashboard = () => {
   const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
@@ -82,9 +71,6 @@ const Dashboard = () => {
     };
   }, [selectedChildId, queryClient]);
 
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
   const handleNotificationClick = (notification: AppNotification) => {
@@ -102,110 +88,28 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 md:px-8 pb-12">
         <div className="space-y-8">
           
-          {isLoadingChildren ? (
-            <Skeleton className="h-48 w-full" />
-          ) : children && children.length > 0 && selectedChild ? (
-            <>
-              <ChildSelector 
-                children={children}
-                selectedChildId={selectedChildId!}
-                onSelectChild={(id) => setSelectedChildId(id)}
-              />
-              <Link to={`/child/${selectedChild.id}`} className="block rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
-                <ChildProfileCard child={selectedChild} />
-              </Link>
-            </>
-          ) : (
-             <Card>
-              <CardHeader>
-                <CardTitle>Welcome to ParentOS</CardTitle>
-                <CardDescription>Please add a child profile to get started.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild>
-                  <Link to="/add-child">Add Child Profile</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <DashboardHeader
+            children={children}
+            selectedChild={selectedChild}
+            selectedChildId={selectedChildId}
+            onSelectChild={setSelectedChildId}
+            isLoadingChildren={isLoadingChildren}
+          />
 
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
-              <NotificationBell onNotificationClick={handleNotificationClick} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" variant="outline" disabled={!selectedChildId}><UploadCloud className="mr-2 h-4 w-4" /> Upload Form</Button>
-                </DialogTrigger>
-                <UploadFormModal onOpenChange={setIsUploadModalOpen} selectedChildId={selectedChildId} />
-              </Dialog>
-
-              <Dialog open={isTranslateModalOpen} onOpenChange={setIsTranslateModalOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" variant="outline"><Languages className="mr-2 h-4 w-4" /> Translate Message</Button>
-                </DialogTrigger>
-                <TranslateMessageModal onOpenChange={setIsTranslateModalOpen} />
-              </Dialog>
-
-              <Dialog open={isChatModalOpen} onOpenChange={setIsChatModalOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" variant="outline" disabled={!selectedChildId}>
-                    <MessageSquare className="mr-2 h-4 w-4" /> Team Chat
-                  </Button>
-                </DialogTrigger>
-                {selectedChild && (
-                  <TeamChatDialog
-                    childId={selectedChild.id}
-                    childName={selectedChild.name}
-                    isOpen={isChatModalOpen}
-                    onOpenChange={setIsChatModalOpen}
-                  />
-                )}
-              </Dialog>
-              
-              <Button asChild size="lg" variant="outline" disabled={!selectedChildId}>
-                <Link to={selectedChildId ? `/assistant?childId=${selectedChildId}` : '/assistant'}>
-                  <BrainCircuit className="mr-2 h-4 w-4" /> AI Assistant
-                </Link>
-              </Button>
-              
-              {profile?.role === 'Parent' && (
-                <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="lg" variant="outline" disabled={!selectedChildId}>
-                      <UserPlus className="mr-2 h-4 w-4" /> Invite Team
-                    </Button>
-                  </DialogTrigger>
-                  {selectedChildId && <InviteTeamMemberDialog onOpenChange={setIsInviteModalOpen} childId={selectedChildId} />}
-                </Dialog>
-              )}
-            </div>
-          </div>
+          <QuickActions
+            selectedChild={selectedChild}
+            profile={profile}
+            onNotificationClick={handleNotificationClick}
+            isChatModalOpen={isChatModalOpen}
+            onChatModalOpenChange={setIsChatModalOpen}
+          />
 
           <div className="grid gap-12 md:grid-cols-3">
-            <div className="md:col-span-2 space-y-6">
-              <h2 className="text-xl font-semibold text-foreground">Child's Timeline</h2>
-              {isLoadingLogs && (
-                <div className="space-y-4">
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                  <Skeleton className="h-24 w-full" />
-                </div>
-              )}
-              {isError && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Error</CardTitle>
-                    <CardDescription>Could not load the timeline. Please try again later.</CardDescription>
-                  </CardHeader>
-                </Card>
-              )}
-              {logs?.map(log => (
-                <LogCard key={log.id} log={log} />
-              ))}
-            </div>
+            <Timeline 
+              logs={logs}
+              isLoading={isLoadingLogs}
+              isError={isError}
+            />
             <div className="space-y-6">
               {logs && logs.length > 0 && <AiInsights logs={logs} />}
               <NewLogForm selectedChildId={selectedChildId} />
