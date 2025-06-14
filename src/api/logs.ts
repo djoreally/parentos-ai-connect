@@ -133,7 +133,6 @@ export const generatePdfDigest = async (childId: string, startDate: Date, endDat
             startDate: startDate.toISOString(), 
             endDate: endDate.toISOString() 
         },
-        responseType: 'blob',
     });
 
     if (error) {
