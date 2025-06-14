@@ -6,7 +6,7 @@ import { Baby } from 'lucide-react';
 
 interface ChildSelectorProps {
   children: Child[];
-  selectedChildId: number;
+  selectedChildId: string;
   onSelectChild: (childId: string) => void;
 }
 
@@ -15,7 +15,7 @@ const ChildSelector = ({ children, selectedChildId, onSelectChild }: ChildSelect
     <div className="flex flex-wrap items-center gap-4">
        <h2 className="text-xl font-semibold text-foreground whitespace-nowrap">Viewing Profile For:</h2>
        <Select
-        value={String(selectedChildId)}
+        value={selectedChildId}
         onValueChange={onSelectChild}
       >
         <SelectTrigger className="w-full sm:w-[280px]">
@@ -23,7 +23,7 @@ const ChildSelector = ({ children, selectedChildId, onSelectChild }: ChildSelect
         </SelectTrigger>
         <SelectContent>
           {children.map((child) => (
-            <SelectItem key={child.id} value={String(child.id)}>
+            <SelectItem key={child.id} value={child.id}>
               <div className="flex items-center gap-2">
                 <Baby className="h-4 w-4 text-muted-foreground" />
                 <span>{child.name}</span>
