@@ -101,8 +101,8 @@ export const submitLog = async (
   const newLogPayload = {
     child_id: childId,
     user_id: user.id,
-    author: 'Parent' as const, // For now, we assume the parent is always the author.
-    type, // Use the type from logData
+    author: 'PARENT' as const, // Using uppercase for enum consistency.
+    type: type.toUpperCase(), // Using uppercase for enum consistency.
     original_entry: { title, description },
     summary_for_teacher,
     summary_for_doctor,
