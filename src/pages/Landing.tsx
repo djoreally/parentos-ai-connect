@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import LandingHeader from '@/components/LandingHeader';
@@ -50,22 +49,16 @@ const LandingPage = () => {
       <main className="flex-grow">
         {/* Hero Section */}
         <section
-          className="relative py-32 md:py-40 flex items-center justify-center text-center text-white"
-          style={{
-            backgroundImage: "url('/lovable-uploads/899ce370-a02a-4e0f-bc44-7c8d6c28211d.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
+          className="py-32 md:py-40 flex items-center justify-center text-center bg-primary text-primary-foreground"
         >
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative container mx-auto px-4 md:px-8">
+          <div className="container mx-auto px-4 md:px-8">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
               Connect Caregivers, Support Your Child's Growth
             </h1>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-white/90 mb-8">
+            <p className="max-w-3xl mx-auto text-lg md:text-xl text-primary-foreground/90 mb-8">
               ParentOS integrates insights from parents, teachers, and doctors into a single timeline, ensuring comprehensive support for your child's well-being.
             </p>
-            <Button asChild size="lg">
+            <Button asChild size="lg" variant="secondary">
               <Link to="/register">
                 Get Started <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
