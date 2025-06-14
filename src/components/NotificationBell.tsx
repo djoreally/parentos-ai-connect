@@ -11,7 +11,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export default function NotificationBell() {
+interface NotificationBellProps {
+  onNotificationClick?: (notification: Notification) => void;
+}
+
+export default function NotificationBell({ onNotificationClick }: NotificationBellProps) {
   const queryClient = useQueryClient();
   const { data: notifications } = useQuery<Notification[]>({
     queryKey: ['notifications'],
@@ -66,10 +70,11 @@ export default function NotificationBell() {
     },
   });
 
-  const handleNotificationClick = (notification: Notification) => {
+  const handleItemClick = (notification: Notification) => {
     if (!notification.is_read) {
       markAsReadMutation.mutate(notification.id);
     }
+    onNotificationClick?.(notification);
   };
   
   const handleMarkAllAsRead = () => {
@@ -107,7 +112,7 @@ export default function NotificationBell() {
                     "mb-2 grid grid-cols-[25px_1fr] items-start pb-4 last:mb-0 last:pb-0 cursor-pointer p-2 rounded-lg hover:bg-muted",
                     !notification.is_read && "bg-primary/5"
                   )}
-                  onClick={() => handleNotificationClick(notification)}
+                  onClick={() => handleItemClick(notification)}
                 >
                   <span className={cn("flex h-2 w-2 translate-y-1.5 rounded-full", !notification.is_read ? "bg-sky-500" : "bg-muted")} />
                   <div className="grid gap-1">

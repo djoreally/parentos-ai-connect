@@ -87,6 +87,13 @@ const Dashboard = () => {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.type === 'new_message' && notification.child_id) {
+      setSelectedChildId(notification.child_id);
+      setIsChatModalOpen(true);
+    }
+  };
+
   const selectedChild = children?.find(child => child.id === selectedChildId);
 
   return (
@@ -125,7 +132,7 @@ const Dashboard = () => {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
-              <NotificationBell />
+              <NotificationBell onNotificationClick={handleNotificationClick} />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
