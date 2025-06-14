@@ -16,6 +16,8 @@ import { getLogs } from '@/api/logs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import VoiceNoteModal from '@/components/VoiceNoteModal';
+import UploadFormModal from '@/components/UploadFormModal';
+import TranslateMessageModal from '@/components/TranslateMessageModal';
 
 const Dashboard = () => {
   const { data: logs, isLoading, isError } = useQuery<LogEntry[]>({
@@ -26,6 +28,8 @@ const Dashboard = () => {
   const [children] = useState<Child[]>(mockChildren || []);
   const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.id || 0);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
 
   const selectedChild = children.find(child => child.id === selectedChildId);
 
@@ -67,8 +71,21 @@ const Dashboard = () => {
                 </DialogTrigger>
                 <VoiceNoteModal onOpenChange={setIsVoiceModalOpen} />
               </Dialog>
-              <Button size="lg" variant="outline"><UploadCloud /> Upload Form</Button>
-              <Button size="lg" variant="outline"><Languages /> Translate Message</Button>
+
+              <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="outline"><UploadCloud /> Upload Form</Button>
+                </DialogTrigger>
+                <UploadFormModal onOpenChange={setIsUploadModalOpen} />
+              </Dialog>
+
+              <Dialog open={isTranslateModalOpen} onOpenChange={setIsTranslateModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" variant="outline"><Languages /> Translate Message</Button>
+                </DialogTrigger>
+                <TranslateMessageModal onOpenChange={setIsTranslateModalOpen} />
+              </Dialog>
+              
               <Button asChild size="lg" variant="outline">
                 <Link to="/assistant">
                   <BrainCircuit /> Ask AI Assistant

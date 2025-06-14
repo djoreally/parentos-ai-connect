@@ -1,8 +1,9 @@
+
 import { LogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { User, School, Stethoscope, ArrowDown, Mic } from 'lucide-react';
+import { User, School, Stethoscope, ArrowDown, Mic, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface LogCardProps {
@@ -18,7 +19,7 @@ const authorIcons: Record<LogEntry['author'], React.ReactNode> = {
 const typeIcons: Record<LogEntry['type'], React.ReactNode> = {
   text: <ArrowDown className="h-4 w-4" />,
   voice: <Mic className="h-4 w-4" />,
-  document: <ArrowDown className="h-4 w-4" />,
+  document: <FileText className="h-4 w-4" />,
 };
 
 const LogCard = ({ log }: LogCardProps) => {
