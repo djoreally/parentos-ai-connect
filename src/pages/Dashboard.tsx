@@ -72,7 +72,9 @@ const Dashboard = () => {
                 <CardDescription>Please add a child profile to get started.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button>Add Child Profile</Button>
+                <Button asChild>
+                  <Link to="/add-child">Add Child Profile</Link>
+                </Button>
               </CardContent>
             </Card>
           )}

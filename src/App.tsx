@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import AssistantPage from "./pages/AssistantPage";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "next-themes";
 import TeamDashboardPage from "./pages/TeamDashboardPage";
+import AddChildPage from "./pages/AddChildPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/team-dashboard" element={<TeamDashboardPage />} />
             <Route path="/child/:childId" element={<ChildProfilePage />} />
+            <Route path="/add-child" element={<AddChildPage />} />
             <Route path="/assistant" element={<AssistantPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Child } from '@/types';
 
@@ -21,3 +20,26 @@ export const getChildById = async (id: string): Promise<Child | null> => {
     }
     return data;
 }
+
+export const createChild = async (childData: {
+  name: string;
+  dob: string;
+  allergies: string[] | null;
+  medications: string[] | null;
+}): Promise<Child> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated for this action.");
+
+  const { data, error } = await supabase
+    .from('children')
+    .insert({ ...childData, user_id: user.id })
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating child:', error);
+    throw error;
+  }
+
+  return data;
+};
