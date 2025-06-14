@@ -1,17 +1,24 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { LogEntry } from '@/types';
 import { logAuditEvent } from './audit';
 
+const LOGS_PER_PAGE = 5;
+
 // This function simulates fetching logs from an API.
-export const getLogs = async (childId: string): Promise<LogEntry[]> => {
-  console.log(`Fetching logs from Supabase for child: ${childId}`);
-  if (!childId) return [];
+export const getLogs = async (childId: string, page: number = 1): Promise<{logs: LogEntry[], count: number}> => {
+  console.log(`Fetching logs from Supabase for child: ${childId}, page: ${page}`);
+  if (!childId) return { logs: [], count: 0 };
   
-  const { data, error } = await supabase
+  const from = (page - 1) * LOGS_PER_PAGE;
+  const to = from + LOGS_PER_PAGE - 1;
+
+  const { data, error, count } = await supabase
     .from('logs')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('child_id', childId)
-    .order('timestamp', { ascending: false });
+    .order('timestamp', { ascending: false })
+    .range(from, to);
 
   if (error) {
     console.error('Error fetching logs:', error);
@@ -20,7 +27,7 @@ export const getLogs = async (childId: string): Promise<LogEntry[]> => {
   
   console.log("Supabase responded with logs:", data);
   // Cast to unknown first to satisfy TypeScript's stricter type checking
-  return (data as unknown as LogEntry[]) || [];
+  return { logs: (data as unknown as LogEntry[]) || [], count: count ?? 0 };
 };
 
 

@@ -14,6 +14,8 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import QuickActions from '@/components/dashboard/QuickActions';
 import Timeline from '@/components/dashboard/Timeline';
 
+const LOGS_PER_PAGE = 5;
+
 const Dashboard = () => {
   const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
     queryKey: ['children'],
@@ -22,6 +24,7 @@ const Dashboard = () => {
 
   const { profile } = useAuth();
   const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
   
   useEffect(() => {
@@ -29,12 +32,20 @@ const Dashboard = () => {
       setSelectedChildId(children[0].id);
     }
   }, [children, selectedChildId]);
+  
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page when child changes
+  }, [selectedChildId]);
 
-  const { data: logs, isLoading: isLoadingLogs, isError } = useQuery<LogEntry[]>({
-    queryKey: ['logs', selectedChildId],
-    queryFn: () => getLogs(selectedChildId!),
+  const { data: logsData, isLoading: isLoadingLogs, isError } = useQuery<{logs: LogEntry[], count: number}>({
+    queryKey: ['logs', selectedChildId, currentPage],
+    queryFn: () => getLogs(selectedChildId!, currentPage),
     enabled: !!selectedChildId,
   });
+
+  const logs = logsData?.logs;
+  const totalLogs = logsData?.count ?? 0;
+  const totalPages = Math.ceil(totalLogs / LOGS_PER_PAGE);
 
   useEffect(() => {
     if (!selectedChildId) return;
@@ -109,6 +120,9 @@ const Dashboard = () => {
               logs={logs}
               isLoading={isLoadingLogs}
               isError={isError}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
             />
             <div className="space-y-6">
               {logs && logs.length > 0 && <AiInsights logs={logs} />}
