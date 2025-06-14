@@ -42,7 +42,6 @@ const Dashboard = () => {
     enabled: !!selectedChildId,
   });
 
-  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -84,14 +83,7 @@ const Dashboard = () => {
 
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-              <Dialog open={isVoiceModalOpen} onOpenChange={setIsVoiceModalOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg" variant="outline" disabled={!selectedChildId}><Mic /> Log Voice Note</Button>
-                </DialogTrigger>
-                <VoiceNoteModal onOpenChange={setIsVoiceModalOpen} selectedChildId={selectedChildId} />
-              </Dialog>
-
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" variant="outline" disabled={!selectedChildId}><UploadCloud /> Upload Form</Button>
