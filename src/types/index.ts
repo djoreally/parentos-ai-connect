@@ -32,7 +32,7 @@ export type Profile = {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  role: 'Parent' | 'Teacher' | 'Doctor' | null;
+  role: 'Parent' | 'Teacher' | 'Doctor' | 'Admin' | null;
   created_at: string;
   updated_at: string;
 };

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 
 export type ProfileUpdate = {
-  role?: 'Parent' | 'Teacher' | 'Doctor';
+  role?: 'Parent' | 'Teacher' | 'Doctor' | 'Admin';
   first_name?: string;
   last_name?: string;
 };
