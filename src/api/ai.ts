@@ -30,3 +30,16 @@ export const getAiInsights = async (logs: LogEntry[]): Promise<Insight[]> => {
 
     return data.insights;
 };
+
+export const extractTextFromImage = async (imageUrl: string): Promise<string> => {
+  const { data, error } = await supabase.functions.invoke('extract-text-from-image', {
+    body: { imageUrl },
+  });
+
+  if (error) {
+    console.error("Error extracting text from image:", error);
+    throw new Error("Failed to extract text from image.");
+  }
+
+  return data.text;
+};

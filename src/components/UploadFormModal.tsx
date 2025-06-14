@@ -14,6 +14,7 @@ import { FileText, Save, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { submitLog } from '@/api/logs';
 import { uploadDocument } from '@/api/storage';
+import { extractTextFromImage } from '@/api/ai';
 
 interface UploadFormModalProps {
   onOpenChange: (open: boolean) => void;
@@ -33,19 +34,42 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
       if (!selectedChildId) {
         throw new Error("No child selected.");
       }
+      toast.info("Uploading document...");
       const { publicUrl } = await uploadDocument(theFile);
       
+      let finalDescription = description;
+      const isImage = theFile.type.startsWith('image/');
+
+      if (isImage) {
+        toast.info("Image detected, extracting text with AI...");
+        try {
+          const extractedText = await extractTextFromImage(publicUrl);
+          if (extractedText) {
+            finalDescription = description 
+              ? `${description}\n\n--- Text Extracted by AI ---\n${extractedText}` 
+              : extractedText;
+            toast.success("Text extracted from image!");
+          } else {
+            toast.warning("AI couldn't find any text in the image.");
+          }
+        } catch (ocrError) {
+          console.error("OCR failed:", ocrError);
+          toast.warning("Could not extract text from image, but file was uploaded.");
+        }
+      }
+      
+      toast.info("Saving log to timeline...");
       return submitLog({ 
         title, 
-        description: description, 
+        description: finalDescription, 
         type: 'document', 
         childId: selectedChildId,
-        audio_url: publicUrl // We now store the URL in the dedicated field.
+        audio_url: publicUrl
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
-      toast.success("Document uploaded and analyzed!");
+      toast.success("Document uploaded and saved!");
       handleClose();
     },
     onError: (error) => {
@@ -130,7 +154,7 @@ const UploadFormModal = ({ onOpenChange, selectedChildId }: UploadFormModalProps
 
       <DialogFooter>
         <Button variant="ghost" onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSave} disabled={mutation.isPending || !title || !description || !file}>
+        <Button onClick={handleSave} disabled={mutation.isPending || !title || !file}>
           {mutation.isPending ? 'Saving...' : (
             <>
               <Save className="mr-2 h-4 w-4" />
