@@ -101,7 +101,7 @@ export const submitLog = async (
   const newLogPayload = {
     child_id: childId,
     user_id: user.id,
-    author: 'PARENT' as const, // Using uppercase for enum consistency.
+    author: 'Parent' as const, // Corrected casing to match DB enum.
     type: type.toUpperCase(), // Using uppercase for enum consistency.
     original_entry: { title, description },
     summary_for_teacher,
