@@ -10,7 +10,7 @@ import { UploadCloud, Languages, BrainCircuit, UserPlus } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
 import { getChildren } from '@/api/children';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,6 +20,8 @@ import TranslateMessageModal from '@/components/TranslateMessageModal';
 import AiInsights from '@/components/AiInsights';
 import { useAuth } from '@/contexts/AuthContext';
 import InviteTeamMemberDialog from '@/components/InviteTeamMemberDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
@@ -29,6 +31,7 @@ const Dashboard = () => {
 
   const { profile } = useAuth();
   const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
+  const queryClient = useQueryClient();
   
   useEffect(() => {
     if (children && children.length > 0 && !selectedChildId) {
@@ -41,6 +44,41 @@ const Dashboard = () => {
     queryFn: () => getLogs(selectedChildId!),
     enabled: !!selectedChildId,
   });
+
+  useEffect(() => {
+    if (!selectedChildId) return;
+
+    const channel = supabase
+      .channel(`realtime-logs-for-child-${selectedChildId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'logs',
+          filter: `child_id=eq.${selectedChildId}`,
+        },
+        (payload) => {
+          console.log('New log received via realtime!', payload);
+          const newLog = payload.new as LogEntry;
+          toast.info(`New log from ${newLog.author}: "${newLog.original_entry.title}"`);
+          queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
+        }
+      )
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Realtime channel subscribed for child: ${selectedChildId}`);
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`Realtime channel error for child ${selectedChildId}:`, err);
+        }
+      });
+
+    return () => {
+      console.log(`Unsubscribing from realtime channel for child: ${selectedChildId}`);
+      supabase.removeChannel(channel);
+    };
+  }, [selectedChildId, queryClient]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
