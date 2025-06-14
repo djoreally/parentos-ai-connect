@@ -29,6 +29,7 @@ export const submitLog = async (
     id: Date.now(),
     timestamp: new Date().toISOString(),
     author: 'Parent', // For now, we assume the parent is always the author of new logs.
+    type: 'text',
     original_entry: {
       title: title,
       description: description,

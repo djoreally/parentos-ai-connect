@@ -1,9 +1,8 @@
-
 import { LogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { User, School, Stethoscope } from 'lucide-react';
+import { User, School, Stethoscope, ArrowDown, Mic } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface LogCardProps {
@@ -16,6 +15,12 @@ const authorIcons: Record<LogEntry['author'], React.ReactNode> = {
   Doctor: <Stethoscope className="h-5 w-5 text-gray-500" />,
 };
 
+const typeIcons: Record<LogEntry['type'], React.ReactNode> = {
+  text: <ArrowDown className="h-4 w-4" />,
+  voice: <Mic className="h-4 w-4" />,
+  document: <ArrowDown className="h-4 w-4" />,
+};
+
 const LogCard = ({ log }: LogCardProps) => {
   const timeAgo = formatDistanceToNow(new Date(log.timestamp), { addSuffix: true });
 
@@ -24,9 +29,12 @@ const LogCard = ({ log }: LogCardProps) => {
       <CardHeader className="flex flex-row items-start bg-muted/50 justify-between space-y-0 pb-3">
         <div className="space-y-1.5">
           <CardTitle className="text-lg">{log.original_entry.title}</CardTitle>
-          <div className="flex items-center text-sm text-muted-foreground space-x-2">
+          <div className="flex items-center text-sm text-muted-foreground space-x-2 flex-wrap">
             {authorIcons[log.author]}
             <span>Logged by {log.author}</span>
+            <span>&bull;</span>
+            {typeIcons[log.type]}
+            <span className="capitalize">{log.type} Note</span>
             <span>&bull;</span>
             <span>{timeAgo}</span>
           </div>

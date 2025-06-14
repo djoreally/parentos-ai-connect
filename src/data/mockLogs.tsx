@@ -1,4 +1,3 @@
-
 import { LogEntry } from '@/types';
 
 export const mockLogs: LogEntry[] = [
@@ -6,6 +5,7 @@ export const mockLogs: LogEntry[] = [
     id: 1,
     timestamp: '2025-06-14T09:15:00Z',
     author: 'Parent',
+    type: 'text',
     original_entry: {
       title: 'Nightmares & Chewing Shirt',
       description: "Leo has been waking up from nightmares almost every night this week. He's also started chewing the collar of his shirts, especially when he seems nervous or is concentrating on something. He told me his tummy hurts sometimes at school.",
@@ -19,6 +19,7 @@ export const mockLogs: LogEntry[] = [
     id: 2,
     timestamp: '2025-06-12T15:30:00Z',
     author: 'Teacher',
+    type: 'text',
     original_entry: {
       title: 'Difficulty with transitions in class',
       description: "Leo had a tough time transitioning from free play to circle time today. He became very upset and refused to join the group for about 10 minutes. He seems more distracted than usual this week.",
@@ -32,6 +33,7 @@ export const mockLogs: LogEntry[] = [
     id: 3,
     timestamp: '2025-06-10T11:00:00Z',
     author: 'Parent',
+    type: 'text',
     original_entry: {
       title: 'Great day at the park',
       description: "Leo had a wonderful time at the park, played well with another child and didn't want to leave. He was so happy and energetic.",
@@ -45,6 +47,7 @@ export const mockLogs: LogEntry[] = [
     id: 4,
     timestamp: '2025-06-08T14:20:00Z',
     author: 'Teacher',
+    type: 'text',
     original_entry: {
       title: 'Focused during story time',
       description: "Leo was exceptionally engaged during story time today. He sat still and even asked a question about the story. A very focused moment for him.",

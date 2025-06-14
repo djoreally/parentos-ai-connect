@@ -13,6 +13,7 @@ export type LogEntry = {
   id: number;
   timestamp: string;
   author: 'Parent' | 'Teacher' | 'Doctor';
+  type: 'text' | 'voice' | 'document';
   original_entry: {
     title: string;
     description: string;
