@@ -9,6 +9,38 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      child_access: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_access_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       children: {
         Row: {
           ai_summary: string | null
@@ -44,6 +76,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      invitations: {
+        Row: {
+          child_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          invitee_email: string
+          parent_user_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          status: Database["public"]["Enums"]["invitation_status"]
+          token: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitee_email: string
+          parent_user_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitee_email?: string
+          parent_user_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: Database["public"]["Enums"]["invitation_status"]
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       logs: {
         Row: {
@@ -134,6 +210,7 @@ export type Database = {
     }
     Enums: {
       author_role: "Parent" | "Teacher" | "Doctor"
+      invitation_status: "pending" | "accepted" | "expired" | "revoked"
       log_type: "text" | "voice" | "document"
       user_role: "Parent" | "Teacher" | "Doctor"
     }
@@ -252,6 +329,7 @@ export const Constants = {
   public: {
     Enums: {
       author_role: ["Parent", "Teacher", "Doctor"],
+      invitation_status: ["pending", "accepted", "expired", "revoked"],
       log_type: ["text", "voice", "document"],
       user_role: ["Parent", "Teacher", "Doctor"],
     },

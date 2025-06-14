@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -6,7 +5,7 @@ import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { LogEntry, Child } from '@/types';
-import { Mic, UploadCloud, Languages, BrainCircuit } from 'lucide-react';
+import { Mic, UploadCloud, Languages, BrainCircuit, UserPlus } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
@@ -19,6 +18,8 @@ import VoiceNoteModal from '@/components/VoiceNoteModal';
 import UploadFormModal from '@/components/UploadFormModal';
 import TranslateMessageModal from '@/components/TranslateMessageModal';
 import AiInsights from '@/components/AiInsights';
+import { useAuth } from '@/contexts/AuthContext';
+import InviteTeamMemberDialog from '@/components/InviteTeamMemberDialog';
 
 const Dashboard = () => {
   const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
@@ -26,6 +27,7 @@ const Dashboard = () => {
     queryFn: getChildren,
   });
 
+  const { profile } = useAuth();
   const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
   
   useEffect(() => {
@@ -43,6 +45,7 @@ const Dashboard = () => {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const selectedChild = children?.find(child => child.id === selectedChildId);
 
@@ -81,7 +84,7 @@ const Dashboard = () => {
 
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
               <Dialog open={isVoiceModalOpen} onOpenChange={setIsVoiceModalOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" variant="outline" disabled={!selectedChildId}><Mic /> Log Voice Note</Button>
@@ -108,6 +111,17 @@ const Dashboard = () => {
                   <BrainCircuit /> Ask AI Assistant
                 </Link>
               </Button>
+              
+              {profile?.role === 'Parent' && (
+                <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" variant="outline" disabled={!selectedChildId}>
+                      <UserPlus className="mr-2 h-4 w-4" /> Invite Team
+                    </Button>
+                  </DialogTrigger>
+                  {selectedChildId && <InviteTeamMemberDialog onOpenChange={setIsInviteModalOpen} childId={selectedChildId} />}
+                </Dialog>
+              )}
             </div>
           </div>
 
@@ -145,4 +159,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
