@@ -12,7 +12,7 @@ const LandingHeader = () => {
   ];
 
   return (
-    <header className="flex items-center justify-between whitespace-nowrap border-b bg-white px-10 py-3">
+    <header className="flex items-center justify-between whitespace-nowrap border-b border-border bg-background px-10 py-3">
       <Link to="/" className="flex items-center gap-4 text-foreground">
         <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-6 w-6">
           <path
