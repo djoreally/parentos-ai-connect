@@ -5,8 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/Landing";
-import LoginPage from "./pages/Login";
-import SignUpPage from "./pages/SignUp";
+import SignInPage from "./pages/auth/SignInPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import RoleSelectionPage from "./pages/auth/RoleSelectionPage";
 import Dashboard from "./pages/Dashboard";
 import ChildProfilePage from "./pages/ChildProfilePage";
 import AssistantPage from "./pages/AssistantPage";
@@ -22,8 +23,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/login" element={<SignInPage />} />
+          <Route path="/signup" element={<RegisterPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/select-role" element={<RoleSelectionPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/child/:childId" element={<ChildProfilePage />} />
           <Route path="/assistant" element={<AssistantPage />} />
