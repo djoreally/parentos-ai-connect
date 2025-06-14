@@ -31,7 +31,7 @@ const LandingHeader = () => {
           ))}
         </nav>
         <Button asChild>
-          <Link to="/register">Request Demo</Link>
+          <Link to="/register">Get Started</Link>
         </Button>
       </div>
     </header>

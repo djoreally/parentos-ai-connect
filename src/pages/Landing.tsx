@@ -1,28 +1,32 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import LandingHeader from '@/components/LandingHeader';
 import LandingFooter from '@/components/LandingFooter';
 import FeatureCard from '@/components/FeatureCard';
 import TestimonialCard from '@/components/TestimonialCard';
-import { Users, Calendar, ChartLine } from 'lucide-react';
+import { Users, Calendar, ChartLine, BrainCircuit } from 'lucide-react';
 
 const LandingPage = () => {
   const features = [
     {
-      icon: Users,
+      icon: Calendar,
       title: 'Unified Timeline',
       description: 'View all observations from parents, teachers, and doctors in one place.',
     },
     {
-      icon: Calendar,
-      title: 'Progress Tracking',
-      description: "Monitor your child's development over time with visual progress reports.",
+      icon: BrainCircuit,
+      title: 'AI-Powered Insights',
+      description: 'Leverage AI to summarize logs, identify trends, and provide suggestions.',
+    },
+    {
+      icon: Users,
+      title: 'Collaborative Tools',
+      description: 'Securely share information and collaborate with the entire care team.',
     },
     {
       icon: ChartLine,
-      title: 'Collaborative Insights',
-      description: 'Share insights and collaborate with all caregivers to ensure consistent support.',
+      title: 'Progress Tracking',
+      description: "Monitor your child's development over time with visual progress reports.",
     },
   ];
 
@@ -121,14 +125,14 @@ const LandingPage = () => {
           <section id="pricing" className="text-center px-4 py-10 @[480px]:px-10 @[480px]:py-20">
             <div className="flex flex-col gap-2 text-center max-w-[720px] mx-auto">
               <h1 className="text-foreground tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
-                Ready to Connect Caregivers and Support Your Child's Growth?
+                Get Started with ParentOS Today
               </h1>
               <p className="text-foreground text-base font-normal leading-normal mb-8">
-                Request a demo today and see how ParentOS can transform your child's well-being.
+                Sign up for free to start building a comprehensive timeline for your child. Upgrade to unlock powerful collaborative features and AI insights.
               </p>
             </div>
             <Button asChild className="h-10 px-4 @[480px]:h-12 @[480px]:px-5 text-sm @[480px]:text-base font-bold leading-normal tracking-[0.015em]">
-              <Link to="/register">Request Demo</Link>
+              <Link to="/register">Get Started for Free</Link>
             </Button>
           </section>
         </div>
