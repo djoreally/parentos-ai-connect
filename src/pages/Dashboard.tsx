@@ -18,6 +18,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import VoiceNoteModal from '@/components/VoiceNoteModal';
 import UploadFormModal from '@/components/UploadFormModal';
 import TranslateMessageModal from '@/components/TranslateMessageModal';
+import AiInsights from '@/components/AiInsights';
 
 const Dashboard = () => {
   const { data: logs, isLoading, isError } = useQuery<LogEntry[]>({
@@ -117,6 +118,7 @@ const Dashboard = () => {
               ))}
             </div>
             <div className="space-y-6">
+              {logs && logs.length > 0 && <AiInsights logs={logs} />}
               <NewLogForm />
             </div>
           </div>
@@ -127,4 +129,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
