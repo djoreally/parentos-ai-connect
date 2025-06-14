@@ -1,9 +1,20 @@
 
 import { LogEntry } from '@/types';
-import { Baby } from 'lucide-react';
+import { mockLogs } from '@/data/mockLogs';
+
+// This function simulates fetching logs from an API.
+export const getLogs = async (): Promise<LogEntry[]> => {
+  console.log("Fetching logs from mock API...");
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  // Return a copy to avoid direct mutation issues with React strict mode
+  const sortedLogs = [...mockLogs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  console.log("Mock API responded with logs:", sortedLogs);
+  return sortedLogs;
+};
+
 
 // This is a mock API function that simulates submitting a new log to a server.
-// It will be replaced with a real API call once the backend is connected.
 export const submitLog = async (
   logData: { title: string; description: string }
 ): Promise<LogEntry> => {
@@ -17,8 +28,7 @@ export const submitLog = async (
   const newLog: LogEntry = {
     id: Date.now(),
     timestamp: new Date().toISOString(),
-    author: 'Parent',
-    authorIcon: <Baby className="h-5 w-5 text-gray-500" />,
+    author: 'Parent', // For now, we assume the parent is always the author of new logs.
     original_entry: {
       title: title,
       description: description,
@@ -30,5 +40,8 @@ export const submitLog = async (
   };
   
   console.log("Mock API responded with new log:", newLog);
+  // We'll prepend to the mockLogs array to simulate a database update.
+  // In a real app, you wouldn't do this on the client.
+  mockLogs.unshift(newLog); 
   return newLog;
 };

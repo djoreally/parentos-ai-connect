@@ -1,27 +1,30 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import LogCard from '@/components/LogCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockLogs } from '@/data/mockLogs.tsx';
 import { mockChildren } from '@/data/mockChildren';
 import { LogEntry, Child } from '@/types';
 import { Mic, UploadCloud, Languages, BrainCircuit } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
 import ChildSelector from '@/components/ChildSelector';
 import NewLogForm from '@/components/NewLogForm';
+import { useQuery } from '@tanstack/react-query';
+import { getLogs } from '@/api/logs';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Dashboard = () => {
-  const [logs, setLogs] = useState<LogEntry[]>(mockLogs || []);
+  const { data: logs, isLoading, isError } = useQuery<LogEntry[]>({
+    queryKey: ['logs'],
+    queryFn: getLogs,
+  });
+
   const [children] = useState<Child[]>(mockChildren || []);
   const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.id || 0);
 
   const selectedChild = children.find(child => child.id === selectedChildId);
-
-  const handleAddNewLog = (newLog: LogEntry) => {
-    setLogs([newLog, ...logs]);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,12 +72,27 @@ const Dashboard = () => {
           <div className="grid gap-12 md:grid-cols-3">
             <div className="md:col-span-2 space-y-6">
               <h2 className="text-xl font-semibold text-foreground">Child's Timeline</h2>
-              {logs.map(log => (
+              {isLoading && (
+                <div className="space-y-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              )}
+              {isError && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Error</CardTitle>
+                    <CardDescription>Could not load the timeline. Please try again later.</CardDescription>
+                  </CardHeader>
+                </Card>
+              )}
+              {logs?.map(log => (
                 <LogCard key={log.id} log={log} />
               ))}
             </div>
             <div className="space-y-6">
-              <NewLogForm onAddLog={handleAddNewLog} />
+              <NewLogForm />
             </div>
           </div>
         </div>

@@ -1,13 +1,11 @@
 
 import { LogEntry } from '@/types';
-import { Baby, Stethoscope, School } from 'lucide-react';
 
 export const mockLogs: LogEntry[] = [
   {
     id: 1,
     timestamp: '2025-06-14T09:15:00Z',
     author: 'Parent',
-    authorIcon: <Baby className="h-5 w-5 text-gray-500" />,
     original_entry: {
       title: 'Nightmares & Chewing Shirt',
       description: "Leo has been waking up from nightmares almost every night this week. He's also started chewing the collar of his shirts, especially when he seems nervous or is concentrating on something. He told me his tummy hurts sometimes at school.",
@@ -20,7 +18,6 @@ export const mockLogs: LogEntry[] = [
     id: 2,
     timestamp: '2025-06-12T15:30:00Z',
     author: 'Teacher',
-    authorIcon: <School className="h-5 w-5 text-gray-500" />,
     original_entry: {
       title: 'Difficulty with transitions in class',
       description: "Leo had a tough time transitioning from free play to circle time today. He became very upset and refused to join the group for about 10 minutes. He seems more distracted than usual this week.",

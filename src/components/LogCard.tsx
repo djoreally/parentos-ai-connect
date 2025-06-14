@@ -10,6 +10,12 @@ interface LogCardProps {
   log: LogEntry;
 }
 
+const authorIcons: Record<LogEntry['author'], React.ReactNode> = {
+  Parent: <User className="h-5 w-5 text-gray-500" />,
+  Teacher: <School className="h-5 w-5 text-gray-500" />,
+  Doctor: <Stethoscope className="h-5 w-5 text-gray-500" />,
+};
+
 const LogCard = ({ log }: LogCardProps) => {
   const timeAgo = formatDistanceToNow(new Date(log.timestamp), { addSuffix: true });
 
@@ -19,7 +25,7 @@ const LogCard = ({ log }: LogCardProps) => {
         <div className="space-y-1.5">
           <CardTitle className="text-lg">{log.original_entry.title}</CardTitle>
           <div className="flex items-center text-sm text-muted-foreground space-x-2">
-            {log.authorIcon}
+            {authorIcons[log.author]}
             <span>Logged by {log.author}</span>
             <span>&bull;</span>
             <span>{timeAgo}</span>

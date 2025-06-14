@@ -1,40 +1,39 @@
 
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { LogEntry } from '@/types';
 import { submitLog } from '@/api/logs';
 import { toast } from 'sonner';
 
-interface NewLogFormProps {
-  onAddLog: (log: LogEntry) => void;
-}
-
-const NewLogForm = ({ onAddLog }: NewLogFormProps) => {
+const NewLogForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !description || isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      const newLog = await submitLog({ title, description });
-      onAddLog(newLog);
+  const mutation = useMutation({
+    mutationFn: submitLog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
       toast.success("New event logged successfully!");
       setTitle('');
       setDescription('');
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Failed to submit log:", error);
       toast.error("Failed to log event. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !description || mutation.isPending) return;
+
+    mutation.mutate({ title, description });
   };
 
   return (
@@ -51,17 +50,17 @@ const NewLogForm = ({ onAddLog }: NewLogFormProps) => {
             placeholder="Title (e.g., 'Tummy ache after lunch')"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            disabled={isSubmitting}
+            disabled={mutation.isPending}
           />
           <Textarea
             placeholder="Describe what happened..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={5}
-            disabled={isSubmitting}
+            disabled={mutation.isPending}
           />
-          <Button type="submit" className="w-full" disabled={isSubmitting || !title || !description}>
-            {isSubmitting ? (
+          <Button type="submit" className="w-full" disabled={mutation.isPending || !title || !description}>
+            {mutation.isPending ? (
               'Adding...'
             ) : (
               <>

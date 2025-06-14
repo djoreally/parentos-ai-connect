@@ -13,7 +13,6 @@ export type LogEntry = {
   id: number;
   timestamp: string;
   author: 'Parent' | 'Teacher' | 'Doctor';
-  authorIcon: React.ReactNode;
   original_entry: {
     title: string;
     description: string;
