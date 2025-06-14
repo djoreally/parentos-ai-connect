@@ -19,6 +19,7 @@ const SignInPage = () => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
+  const [factorId, setFactorId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -42,6 +43,32 @@ const SignInPage = () => {
     }
 
     if (!data.session) {
+      // MFA is required
+      const { data: factorsData, error: mfaError } = await supabase.auth.mfa.listFactors();
+
+      if (mfaError) {
+        setIsLoading(false);
+        toast({
+          title: "Could not retrieve MFA factors",
+          description: mfaError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const totpFactor = factorsData.totp[0];
+      if (!totpFactor) {
+        setIsLoading(false);
+        await logAuditEvent('USER_LOGIN_FAIL', { email, error: "User has no TOTP factor enrolled but MFA is required." });
+        toast({
+          title: "MFA Required, but no authenticator app is set up.",
+          description: "Please contact support if you've lost access.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setFactorId(totpFactor.id);
       setIsLoading(false);
       setMfaRequired(true);
       toast({
@@ -63,9 +90,20 @@ const SignInPage = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = await supabase.auth.verifyOtp({
-      type: 'totp',
-      token: otp,
+    if (!factorId) {
+      setIsLoading(false);
+      toast({
+        title: "An error occurred",
+        description: "MFA factor ID is missing. Please try signing in again.",
+        variant: "destructive",
+      });
+      setMfaRequired(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.mfa.challengeAndVerify({
+      factorId,
+      code: otp,
     });
     
     setIsLoading(false);
@@ -88,6 +126,7 @@ const SignInPage = () => {
     });
     setOtp('');
     setMfaRequired(false);
+    setFactorId(null);
   };
 
   return (
