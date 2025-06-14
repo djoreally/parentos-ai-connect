@@ -1,73 +1,179 @@
-# Welcome to your Lovable project
 
-## Project info
+# ParentOS - The AI-powered translator and relationship assistant across parenting, education, and pediatric healthcare.
 
-**URL**: https://lovable.dev/projects/8ecc087d-9247-4f03-89d6-56ba33aae0ca
+## 🧩 MASTER INDEX
 
-## How can I edit this code?
+| Area              | Use Prompts To...                                        |
+| ----------------- | -------------------------------------------------------- |
+| 🔷 Frontend       | Generate UI components, screens, navigation logic        |
+| 🔶 Backend        | Create API endpoints, server logic, AI integration logic |
+| 🔷 Database       | Design schema, model structure, Firestore integration    |
+| 🔶 Authentication | Setup Firebase Auth, role-based access                   |
+| 🔷 AI Integration | Structure AI prompts and memory management               |
+| 🔶 Security       | Apply secure data practices (HIPAA, FERPA minded)        |
+| 🧪 Testing & QA   | Generate test cases and testing utilities                |
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🔷 FRONTEND PROMPTS
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8ecc087d-9247-4f03-89d6-56ba33aae0ca) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+### 1. 🏠 Home Screen
 
-**Use your preferred IDE**
+> “Create a responsive mobile UI for a home screen dashboard for a parent user. It should include quick actions like 'Log Voice Note', 'Upload Doctor Form', and 'Translate Message'. Show child’s photo and summarized update using a card UI.”
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 2. 👤 Child Profile Page
 
-Follow these steps:
+> “Build a child profile screen showing: profile photo, name, DOB, allergy list, current medications, behavior tags, and emotion timeline chart. Use expandable sections for health logs, education logs, and caregiver notes. Design for mobile.”
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 3. 📄 Logbook Timeline
 
-# Step 3: Install the necessary dependencies.
-npm i
+> “Generate a scrollable timeline view that displays a list of logs from parents, teachers, or doctors. Each log should include a timestamp, icon (voice, text, image), source role (parent/teacher/doctor), and AI-generated summary.”
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+---
 
-**Edit a file directly in GitHub**
+### 4. 🗣️ AI Assistant (Chat Interface)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+> “Design a chat interface for an AI assistant that lets users ask about a child's trends and reports. Include a message history pane, input field with voice-to-text option, and buttons for follow-up suggestions (e.g. ‘Export as PDF’, ‘Translate’, ‘Summarize’)”
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 5. 🔒 Role-Based Login
 
-## What technologies are used for this project?
+> “Create a login screen using Firebase Authentication where the user selects their role (parent, teacher, doctor) after login. Route to separate dashboards based on role. Include logic to invite other caregivers by email.”
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔶 BACKEND PROMPTS
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/8ecc087d-9247-4f03-89d6-56ba33aae0ca) and click on Share -> Publish.
+### 6. 🔁 API Gateway (Firebase Functions or Express)
 
-## Can I connect a custom domain to my Lovable project?
+> “Write backend code using Firebase Cloud Functions to handle submission of logs via text, voice, or images. Each function should save the log in Firestore with the role, child ID, timestamp, and media type.”
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### 7. 🧠 AI Pipeline (Prompt Routing)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+> “Build a backend function that receives logs (text, voice transcript, or image text), applies prompt templating, and sends the query to Gemini 1.5 or GPT-4 to generate a structured summary. Save the result to Firestore under the child profile.”
+
+---
+
+### 8. 📤 PDF Generator
+
+> “Generate a backend function that takes all logs for a child in the last 7 days and compiles a summary PDF using HTML-to-PDF. Include child’s name, date range, and categorized sections (health, behavior, academic).”
+
+---
+
+### 9. 📅 Weekly Digest Scheduler
+
+> “Create a scheduled Firebase Function that runs every Friday at 5 PM local time and sends parents a weekly email summary with links to AI-generated PDF reports and translated highlights.”
+
+---
+
+## 🔷 DATABASE PROMPTS
+
+---
+
+### 10. 📊 Firestore Schema
+
+> “Design a Firestore schema for ParentOS. Include collections for: users, children, logs, permissions, translations, reports. Logs should include type, mediaURL, source role, timestamps, AI summary, and tags.”
+
+---
+
+### 11. 🔑 Child Permissions Structure
+
+> “Create a permission model in Firestore where each child document has a subcollection of access permissions. Permissions should specify user ID, role, access level (read/write/view only). Support invitation links.”
+
+---
+
+## 🔶 AUTHENTICATION PROMPTS
+
+---
+
+### 12. 🔐 Firebase Auth + Role Mapping
+
+> “Write code that registers a new user via Firebase Auth and prompts them to select a role (parent, teacher, doctor). Save the role to Firestore. Redirect them to a role-specific onboarding page.”
+
+---
+
+### 13. 🔗 Role-Based Access Rules (Firestore Rules)
+
+> “Generate Firestore security rules to allow only parents, teachers, or doctors with explicit access to view a child’s profile and logs. Parents can invite others, doctors can only view and add medical logs, teachers can only add behavior logs.”
+
+---
+
+## 🔶 SECURITY & PRIVACY PROMPTS
+
+---
+
+### 14. 🛡️ HIPAA/Ferpa-Oriented Data Handling
+
+> “Add security functions to encrypt all uploaded media (voice notes, PDFs, photos) before storing in Firebase Storage. Use signed URLs for access, and auto-expire links after 7 days. Ensure user access is validated on every request.”
+
+---
+
+### 15. 🧾 Audit Logging
+
+> “Build a logging function that records every read/write operation on child profiles. Include timestamp, user ID, and operation type. Store logs in a secure Firestore collection for auditing.”
+
+---
+
+## 🧠 AI INTEGRATION PROMPTS
+
+---
+
+### 16. ✍️ Structured Prompting for Summaries
+
+> “Generate a prompt template for Gemini to summarize a behavior log. The log may be voice or text. Return a structured summary with: 1. Emotional tone, 2. Likely cause, 3. Suggested action, 4. Tags.”
+
+---
+
+### 17. 🖼️ Image OCR + Context Prompt
+
+> “Write a prompt for Gemini Vision API that receives the extracted text from a scanned medical form and categorizes it into medication name, dosage, instructions, diagnosis, and follow-up plan.”
+
+---
+
+### 18. 🌐 Translation with Tone
+
+> “Create a Gemini prompt that takes a message in English and rewrites it in Spanish for a parent audience. Adjust tone to be caring, professional, and empathetic. Add a footnote if medical terms are translated approximately.”
+
+---
+
+## 🧪 TESTING PROMPTS
+
+---
+
+### 19. ✅ Unit Test Generator
+
+> “Write Jest unit tests for a Firebase Function that handles log submissions. Test for invalid roles, unsupported file types, and missing child ID.”
+
+---
+
+### 20. 🧪 Prompt Accuracy Tests
+
+> “Create a prompt QA checklist for reviewing Gemini’s summaries: Does it miss key information? Does the tone match the intended audience? Is the translated message accurate and sensitive?”
+
+---
+
+## ✨ BONUS: Deployment & DevOps Prompts
+
+---
+
+### 21. 🚀 One-Click Deploy Scripts
+
+> “Write a Firebase CLI deploy script to deploy Cloud Functions, Firestore rules, and frontend to Firebase Hosting. Include step to set environment variables for API keys and service roles.”
+
+---
+
+### 22. 📦 CI/CD Setup
+
+> “Generate GitHub Actions workflow to run linting, build the app, run tests, and deploy to Firebase Hosting when pushing to `main` branch.”
+
