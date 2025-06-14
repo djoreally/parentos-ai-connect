@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import { ArrowRight } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 const LandingPage = () => {
   return (
@@ -28,9 +29,7 @@ const LandingPage = () => {
           </Button>
         </div>
       </main>
-      <footer className="text-center p-4 text-sm text-muted-foreground">
-        © {new Date().getFullYear()} ParentOS. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 };
