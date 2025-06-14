@@ -36,6 +36,8 @@ const formSchema = z.object({
   role: z.enum(['Teacher', 'Doctor'], { required_error: 'Please select a role.' }),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 type InviteTeamMemberDialogProps = {
   onOpenChange: (open: boolean) => void;
   childId: string;
@@ -44,15 +46,15 @@ type InviteTeamMemberDialogProps = {
 const InviteTeamMemberDialog = ({ onOpenChange, childId }: InviteTeamMemberDialogProps) => {
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof formSchema>) => createInvitation({ ...values, childId }),
+  const mutation = useMutation<Awaited<ReturnType<typeof createInvitation>>, Error, FormValues>({
+    mutationFn: (values) => createInvitation({ ...values, childId }),
     onSuccess: () => {
       toast({
         title: 'Invitation Sent!',
@@ -72,7 +74,7 @@ const InviteTeamMemberDialog = ({ onOpenChange, childId }: InviteTeamMemberDialo
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: FormValues) => {
     mutation.mutate(values);
   };
 
