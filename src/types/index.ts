@@ -1,3 +1,4 @@
+
 export type Child = {
   id: string; // Changed from number
   user_id: string;
@@ -35,4 +36,15 @@ export type Profile = {
   role: 'Parent' | 'Teacher' | 'Doctor' | 'Admin' | null;
   created_at: string;
   updated_at: string;
+};
+
+export type Notification = {
+  id: string;
+  user_id: string;
+  child_id: string;
+  log_id: string | null;
+  type: 'new_log' | 'team_invite' | 'alert';
+  message: string;
+  is_read: boolean;
+  created_at: string;
 };

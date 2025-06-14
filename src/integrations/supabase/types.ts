@@ -218,6 +218,61 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          child_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          log_id: string | null
+          message: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          log_id?: string | null
+          message: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          log_id?: string | null
+          message?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "logs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -256,6 +311,7 @@ export type Database = {
       author_role: "Parent" | "Teacher" | "Doctor"
       invitation_status: "pending" | "accepted" | "expired" | "revoked"
       log_type: "text" | "voice" | "document"
+      notification_type: "new_log" | "team_invite" | "alert"
       user_role: "Parent" | "Teacher" | "Doctor" | "Admin"
     }
     CompositeTypes: {
@@ -375,6 +431,7 @@ export const Constants = {
       author_role: ["Parent", "Teacher", "Doctor"],
       invitation_status: ["pending", "accepted", "expired", "revoked"],
       log_type: ["text", "voice", "document"],
+      notification_type: ["new_log", "team_invite", "alert"],
       user_role: ["Parent", "Teacher", "Doctor", "Admin"],
     },
   },

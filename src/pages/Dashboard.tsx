@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -22,6 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import InviteTeamMemberDialog from '@/components/InviteTeamMemberDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import NotificationBell from '@/components/NotificationBell';
 
 const Dashboard = () => {
   const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
@@ -120,7 +120,10 @@ const Dashboard = () => {
           )}
 
           <div>
-            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
+              <NotificationBell />
+            </div>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
                 <DialogTrigger asChild>
