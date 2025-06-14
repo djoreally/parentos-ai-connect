@@ -1,10 +1,9 @@
-
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, School, Stethoscope } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '@/api/profiles';
 import { Profile } from '@/types';

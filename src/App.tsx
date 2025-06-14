@@ -15,31 +15,39 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "next-themes";
 import TeamDashboardPage from "./pages/TeamDashboardPage";
 import AddChildPage from "./pages/AddChildPage";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<SignInPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/select-role" element={<RoleSelectionPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/team-dashboard" element={<TeamDashboardPage />} />
-            <Route path="/child/:childId" element={<ChildProfilePage />} />
-            <Route path="/add-child" element={<AddChildPage />} />
-            <Route path="/assistant" element={<AssistantPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+
+              <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
+              <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+              
+              <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
+              <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
+              <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
+              <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </ThemeProvider>
 );
