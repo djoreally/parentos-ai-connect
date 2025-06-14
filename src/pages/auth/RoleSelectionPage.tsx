@@ -17,14 +17,20 @@ const RoleSelectionPage = () => {
   ];
 
   const handleRoleSelect = (roleName: string) => {
-    // Simulate saving the role to the backend
-    console.log('Simulating role selection:', roleName);
+    // In a real app, you'd save this to a user profile. Here, we use localStorage.
+    localStorage.setItem('userRole', roleName);
+    
+    console.log('Role selected and saved to localStorage:', roleName);
     toast({
       title: "Role Selected!",
-      description: `You are now logged in as a ${roleName}.`,
+      description: `You are now logged in as a ${roleName}. Redirecting...`,
     });
-    // Redirect to dashboard
-    navigate('/dashboard');
+
+    if (roleName === 'Parent') {
+      navigate('/dashboard');
+    } else {
+      navigate('/team-dashboard');
+    }
   };
 
   return (
@@ -38,11 +44,11 @@ const RoleSelectionPage = () => {
             <Button
               key={role.name}
               variant="outline"
-              className="w-full justify-start text-lg p-6"
+              className="w-full justify-start text-lg p-6 gap-4"
               onClick={() => handleRoleSelect(role.name)}
             >
               {role.icon}
-              {role.name}
+              <span>{role.name}</span>
             </Button>
           ))}
         </CardContent>

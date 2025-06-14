@@ -13,6 +13,7 @@ import ChildProfilePage from "./pages/ChildProfilePage";
 import AssistantPage from "./pages/AssistantPage";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "next-themes";
+import TeamDashboardPage from "./pages/TeamDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/select-role" element={<RoleSelectionPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/team-dashboard" element={<TeamDashboardPage />} />
             <Route path="/child/:childId" element={<ChildProfilePage />} />
             <Route path="/assistant" element={<AssistantPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
