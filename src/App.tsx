@@ -12,30 +12,33 @@ import Dashboard from "./pages/Dashboard";
 import ChildProfilePage from "./pages/ChildProfilePage";
 import AssistantPage from "./pages/AssistantPage";
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<SignInPage />} />
-          <Route path="/signup" element={<RegisterPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/select-role" element={<RoleSelectionPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/child/:childId" element={<ChildProfilePage />} />
-          <Route path="/assistant" element={<AssistantPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<SignInPage />} />
+            <Route path="/signup" element={<RegisterPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/select-role" element={<RoleSelectionPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/child/:childId" element={<ChildProfilePage />} />
+            <Route path="/assistant" element={<AssistantPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;
