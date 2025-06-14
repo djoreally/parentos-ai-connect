@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
+import { logAuditEvent } from './audit';
 
 export type ProfileUpdate = {
   role?: 'Parent' | 'Teacher' | 'Doctor' | 'Admin';
@@ -43,6 +43,10 @@ export const updateProfile = async (profileData: ProfileUpdate): Promise<Profile
     console.error('Error updating profile:', error);
     throw error;
   }
+
+  await logAuditEvent('PROFILE_UPDATED', {
+    details: { updated_fields: Object.keys(profileData) }
+  });
 
   return data;
 };

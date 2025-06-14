@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { submitLog } from '@/api/logs';
 import { toast } from 'sonner';
+import { logAuditEvent } from '@/api/audit';
 
 const NewLogForm = ({ selectedChildId }: { selectedChildId?: string }) => {
   const [title, setTitle] = useState('');
@@ -17,11 +18,18 @@ const NewLogForm = ({ selectedChildId }: { selectedChildId?: string }) => {
 
   const mutation = useMutation({
     mutationFn: submitLog,
-    onSuccess: () => {
+    onSuccess: (newLog: any) => {
       queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
       toast.success("New event logged successfully!");
       setTitle('');
       setDescription('');
+      if (newLog && newLog.id) {
+        logAuditEvent('LOG_CREATED', {
+          target_entity: 'log',
+          target_id: newLog.id,
+          details: { child_id: selectedChildId, title: newLog.original_entry?.title }
+        });
+      }
     },
     onError: (error) => {
       console.error("Failed to submit log:", error);
@@ -76,4 +84,3 @@ const NewLogForm = ({ selectedChildId }: { selectedChildId?: string }) => {
 };
 
 export default NewLogForm;
-

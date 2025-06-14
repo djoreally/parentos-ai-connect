@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Child } from '@/types';
+import { logAuditEvent } from './audit';
 
 export const getChildren = async (): Promise<Child[]> => {
     const { data, error } = await supabase.from('children').select('*');
@@ -40,6 +41,12 @@ export const createChild = async (childData: {
     console.error('Error creating child:', error);
     throw error;
   }
+
+  await logAuditEvent('CHILD_PROFILE_CREATED', {
+    target_entity: 'child',
+    target_id: data.id,
+    details: { name: data.name, dob: data.dob }
+  });
 
   return data;
 };

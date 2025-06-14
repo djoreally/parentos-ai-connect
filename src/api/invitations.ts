@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { logAuditEvent } from './audit';
 
 export const createInvitation = async ({
   childId,
@@ -42,6 +43,12 @@ export const createInvitation = async ({
   // For now, we'll log it to the console for demonstration and testing purposes.
   const invitationLink = `${window.location.origin}/register?token=${token}`;
   console.log(`Generated invitation link for ${email}: ${invitationLink}`);
+
+  await logAuditEvent('TEAM_INVITATION_SENT', {
+    target_entity: 'invitation',
+    target_id: data.id,
+    details: { childId, invited_email: email, role }
+  });
   
   return data;
 };

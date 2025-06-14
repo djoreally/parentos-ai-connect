@@ -10,7 +10,10 @@ export type AuditAction =
   | 'LOG_UPDATED'
   | 'LOG_DELETED'
   | 'PDF_DIGEST_GENERATED'
-  | 'CHILD_PROFILE_VIEWED';
+  | 'CHILD_PROFILE_VIEWED'
+  | 'PROFILE_UPDATED'
+  | 'CHILD_PROFILE_CREATED'
+  | 'TEAM_INVITATION_SENT';
 
 export const logAuditEvent = async (
   action: AuditAction, 
