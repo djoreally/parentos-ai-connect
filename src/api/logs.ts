@@ -118,14 +118,14 @@ export const submitLog = async (
     .single();
 
   if (error) {
-    console.error("Error submitting log:", error);
+    console.error("Error submitting log:", JSON.stringify(error, null, 2));
     throw error;
   }
 
   await logAuditEvent('LOG_CREATED', {
     target_entity: 'log',
     target_id: newLog.id,
-    details: { child_id: childId, type: type }
+    details: { child_id: childId, type: type, title: logData.title }
   });
   
   console.log("Supabase responded with new log:", newLog);

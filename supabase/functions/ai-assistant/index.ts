@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -68,7 +67,7 @@ serve(async (req) => {
         }
         // --- END ANONYMIZATION LOGIC ---
 
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const history = messages.slice(0, -1).map((msg: { sender: string; text: string; }) => ({
             role: msg.sender === 'user' ? 'user' : 'model',
