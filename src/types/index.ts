@@ -1,4 +1,11 @@
 
+export type Child = {
+  id: number;
+  name: string;
+  avatarUrl: string;
+  aiSummary: string;
+};
+
 export type LogEntry = {
   id: number;
   timestamp: string;

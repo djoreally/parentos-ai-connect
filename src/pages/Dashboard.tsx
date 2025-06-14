@@ -7,14 +7,20 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { mockLogs } from '@/data/mockLogs.tsx';
-import { LogEntry } from '@/types';
+import { mockChildren } from '@/data/mockChildren';
+import { LogEntry, Child } from '@/types';
 import { PlusCircle, Baby, Mic, UploadCloud, Languages } from 'lucide-react';
 import ChildProfileCard from '@/components/ChildProfileCard';
+import ChildSelector from '@/components/ChildSelector';
 
 const Dashboard = () => {
   const [logs, setLogs] = useState<LogEntry[]>(mockLogs || []);
+  const [children] = useState<Child[]>(mockChildren || []);
+  const [selectedChildId, setSelectedChildId] = useState<number>(children[0]?.id || 0);
   const [newLogTitle, setNewLogTitle] = useState('');
   const [newLogDescription, setNewLogDescription] = useState('');
+
+  const selectedChild = children.find(child => child.id === selectedChildId);
 
   const handleAddLog = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +51,27 @@ const Dashboard = () => {
       <Header />
       <main className="container mx-auto px-4 md:px-8 pb-12">
         <div className="space-y-8">
-          <ChildProfileCard />
+          
+          {children.length > 0 && selectedChild ? (
+            <>
+              <ChildSelector 
+                children={children}
+                selectedChildId={selectedChildId}
+                onSelectChild={(id) => setSelectedChildId(Number(id))}
+              />
+              <ChildProfileCard child={selectedChild} />
+            </>
+          ) : (
+             <Card>
+              <CardHeader>
+                <CardTitle>Welcome to ParentOS</CardTitle>
+                <CardDescription>Please add a child profile to get started.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button>Add Child Profile</Button>
+              </CardContent>
+            </Card>
+          )}
 
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>

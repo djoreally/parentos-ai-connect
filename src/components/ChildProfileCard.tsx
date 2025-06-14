@@ -1,21 +1,26 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Child } from "@/types";
 
-const ChildProfileCard = () => {
+interface ChildProfileCardProps {
+  child: Child;
+}
+
+const ChildProfileCard = ({ child }: ChildProfileCardProps) => {
   return (
     <Card className="animate-fade-in">
       <CardHeader>
-        <CardTitle>Leo's Snapshot</CardTitle>
+        <CardTitle>{child.name}'s Snapshot</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Avatar className="h-24 w-24">
-          <AvatarImage src="/placeholder.svg" alt="Leo's profile picture" />
-          <AvatarFallback>LEO</AvatarFallback>
+          <AvatarImage src={child.avatarUrl} alt={`${child.name}'s profile picture`} />
+          <AvatarFallback>{child.name.substring(0, 2).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">
-            AI Summary: Leo is showing signs of anxiety, especially around transitions and new social situations. He may benefit from a predictable routine and extra verbal preparation before changes in activity. Monitor for shirt-chewing and offer gentle redirections.
+            AI Summary: {child.aiSummary}
           </p>
         </div>
       </CardContent>
