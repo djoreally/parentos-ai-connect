@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,7 @@ import PrivacyPage from "./pages/PrivacyPage";
 import { useEffect } from "react";
 import { usePostHog } from "posthog-js/react";
 import SettingsPage from "./pages/SettingsPage";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -53,33 +53,35 @@ const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <PostHogUserTracker />
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/legal" element={<LegalPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
+        <ErrorBoundary>
+          <PostHogUserTracker />
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/legal" element={<LegalPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
 
-              <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
-              <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-              
-              <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
-              <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
-              <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
-              <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-              <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+                <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
+                <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                
+                <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
+                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
+                <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
+                <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
+                <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
+                
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ErrorBoundary>
       </AuthProvider>
     </QueryClientProvider>
   </ThemeProvider>
