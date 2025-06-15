@@ -1,5 +1,6 @@
 
-import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Header from './Header';
 import * as AuthContext from '@/contexts/AuthContext';
@@ -25,35 +26,35 @@ describe('Header Component', () => {
 
   it('renders the main title and subtitle', () => {
     mockAuth(null);
-    render(
+    const { getByText } = render(
       <BrowserRouter>
         <Header />
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Parentrak')).toBeInTheDocument();
-    expect(screen.getByText('One voice. All contexts. All caregivers.')).toBeInTheDocument();
+    expect(getByText('Parentrak')).toBeInTheDocument();
+    expect(getByText('One voice. All contexts. All caregivers.')).toBeInTheDocument();
   });
 
   it('does not render the Compliance button for non-admin users', () => {
     mockAuth({ role: 'Parent' });
-    render(
+    const { queryByText } = render(
       <BrowserRouter>
         <Header />
       </BrowserRouter>
     );
 
-    expect(screen.queryByText('Compliance')).not.toBeInTheDocument();
+    expect(queryByText('Compliance')).not.toBeInTheDocument();
   });
 
   it('renders the Compliance button for Admin users', () => {
     mockAuth({ role: 'Admin' });
-    render(
+    const { getByText } = render(
       <BrowserRouter>
         <Header />
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Compliance')).toBeInTheDocument();
+    expect(getByText('Compliance')).toBeInTheDocument();
   });
 });
