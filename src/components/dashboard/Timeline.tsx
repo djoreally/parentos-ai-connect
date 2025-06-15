@@ -24,7 +24,7 @@ interface TimelineProps {
 
 const Timeline = ({ logs, isLoading, isError, currentPage, totalPages, onPageChange }: TimelineProps) => {
     return (
-        <div className="lg:col-span-2 space-y-6">
+        <div className="md:col-span-2 space-y-6">
             <h2 className="text-xl font-semibold text-foreground">Child's Timeline</h2>
             {isLoading && (
                 <div className="space-y-4">

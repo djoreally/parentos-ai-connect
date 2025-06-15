@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMessages, sendMessage } from '@/api/messages';
@@ -143,7 +144,7 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
                     <p className="text-sm font-bold">
                       {message.profiles?.first_name || 'A team member'}
                     </p>
-                    <p className="text-sm break-words" dangerouslySetInnerHTML={{ __html: message.content }} />
+                    <p className="text-sm break-words">{message.content}</p>
                     <p className="text-xs text-right mt-1 opacity-70">
                       {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                     </p>

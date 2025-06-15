@@ -13,7 +13,7 @@ interface ChildSelectorProps {
 const ChildSelector = ({ children, selectedChildId, onSelectChild }: ChildSelectorProps) => {
   return (
     <div className="flex flex-wrap items-center gap-4">
-       <h2 className="text-xl font-semibold text-foreground">Viewing Profile For:</h2>
+       <h2 className="text-xl font-semibold text-foreground whitespace-nowrap">Viewing Profile For:</h2>
        <Select
         value={selectedChildId}
         onValueChange={onSelectChild}

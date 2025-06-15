@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { LogEntry, Child, AppNotification } from '@/types';
@@ -125,7 +124,7 @@ const Dashboard = () => {
             isLoadingChildren={isLoadingChildren}
           />
           
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex items-center justify-between">
             <QuickActions
               selectedChild={selectedChild}
               profile={profile}
@@ -134,14 +133,14 @@ const Dashboard = () => {
               onChatModalOpenChange={setIsChatModalOpen}
             />
              {selectedChild && (
-                <Button onClick={() => setShowMilestoneTracker(true)} className="w-full lg:w-auto shrink-0">
+                <Button onClick={() => setShowMilestoneTracker(true)}>
                   <Rocket className="mr-2 h-4 w-4" />
                   Track Milestones
                 </Button>
             )}
           </div>
 
-          <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-12 md:grid-cols-3">
             <Timeline 
               logs={logs}
               isLoading={isLoadingLogs}

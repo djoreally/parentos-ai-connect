@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const RegisterPage = () => {
@@ -27,65 +27,29 @@ const RegisterPage = () => {
       });
       return;
     }
-
-    // Enforce strong password policy
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      toast({
-        title: "Weak Password",
-        description: "Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
-
-    // Sign up user via Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
+      }
     });
+    setIsLoading(false);
 
     if (error) {
-      setIsLoading(false);
       toast({
         title: "Sign up failed",
         description: error.message,
         variant: "destructive",
       });
-      return;
-    }
-
-    // After signup, update the profile role to 'Parent'
-    // The profile is created automatically via trigger, so we just update it.
-    if (data?.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ role: 'Parent' })
-        .eq('id', data.user.id);
-
-      setIsLoading(false);
-      if (profileError) {
-        toast({
-          title: "Profile setup failed",
-          description: "Account created, but could not finish setup. Please contact support.",
-          variant: "destructive",
-        });
-        return;
-      }
     } else {
-      setIsLoading(false);
+      toast({
+        title: "Success!",
+        description: "Account created. Please check your email to confirm your account.",
+      });
+      navigate('/login');
     }
-
-    toast({
-      title: "Success!",
-      description: "Account created. Please check your email to confirm your account.",
-    });
-    navigate('/login');
   };
 
   return (
@@ -149,4 +113,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-
