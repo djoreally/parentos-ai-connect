@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import LandingHeader from '@/components/LandingHeader';
 import LandingFooter from '@/components/LandingFooter';
 import FeatureCard from '@/components/FeatureCard';
-import TestimonialCard from '@/components/TestimonialCard';
+import UseCaseCard from '@/components/UseCaseCard';
 import { Users, Calendar, ChartLine, BrainCircuit, Youtube } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -28,6 +28,24 @@ const LandingPage = () => {
       icon: ChartLine,
       title: 'Progress Tracking',
       description: "Monitor your child's development over time with visual progress reports.",
+    },
+  ];
+
+  const useCases = [
+    {
+      title: "Track Developmental Milestones",
+      description: "Log observations and milestones, and visualize your child's progress over time. Share updates with your care team to ensure everyone is on the same page.",
+      image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=300&auto=format&fit=crop',
+    },
+    {
+      title: "Collaborate with School",
+      description: "Bridge the gap between home and school. Teachers can share classroom observations, and parents can provide context from home, creating a holistic view of the child's day.",
+      image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=300&auto=format&fit=crop',
+    },
+    {
+      title: "Prepare for Doctor Visits",
+      description: "Consolidate all relevant observations, behaviors, and questions before appointments. Use AI-powered summaries to give doctors a clear, concise overview of your child's recent history.",
+      image: 'https://images.unsplash.com/photo-1576091160550-2173dba9996a?q=80&w=300&auto=format&fit=crop',
     },
   ];
 
@@ -154,6 +172,23 @@ const LandingPage = () => {
                   icon={feature.icon}
                   title={feature.title}
                   description={feature.description}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* Use Cases Section */}
+          <section id="use-cases" className="py-10">
+            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] text-center mb-8">
+              Real-World Use Cases
+            </h2>
+            <div className="flex overflow-x-auto p-4 gap-4 [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {useCases.map((useCase) => (
+                <UseCaseCard
+                  key={useCase.title}
+                  title={useCase.title}
+                  description={useCase.description}
+                  image={useCase.image}
                 />
               ))}
             </div>
