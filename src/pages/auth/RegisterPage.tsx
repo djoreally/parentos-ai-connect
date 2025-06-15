@@ -19,6 +19,7 @@ const RegisterPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -27,28 +28,57 @@ const RegisterPage = () => {
       });
       return;
     }
-    setIsLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      }
-    });
-    setIsLoading(false);
 
-    if (error) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        }
       });
-    } else {
+
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // If signup successful, create profile with default role
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            role: 'Parent'
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          // Don't show error to user since auth was successful
+        }
+      }
+
       toast({
         title: "Success!",
         description: "Account created. Please check your email to confirm your account.",
       });
+      
       navigate('/login');
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 

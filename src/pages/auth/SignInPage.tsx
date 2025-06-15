@@ -1,17 +1,19 @@
+
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
 import { logAuditEvent } from '@/api/audit';
 
 const SignInPage = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,63 +27,80 @@ const SignInPage = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setIsLoading(false);
-      await logAuditEvent('USER_LOGIN_FAIL', { details: { email, error: error.message }, target_entity: 'user' });
-      toast({
-        title: "Sign in failed",
-        description: error.message,
-        variant: "destructive",
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      return;
-    }
 
-    if (!data.session) {
-      // MFA is required
-      const { data: factorsData, error: mfaError } = await supabase.auth.mfa.listFactors();
-
-      if (mfaError) {
-        setIsLoading(false);
+      if (error) {
+        await logAuditEvent('USER_LOGIN_FAIL', { 
+          details: { email, error: error.message }, 
+          target_entity: 'user' 
+        });
         toast({
-          title: "Could not retrieve MFA factors",
-          description: mfaError.message,
+          title: "Sign in failed",
+          description: error.message,
           variant: "destructive",
         });
         return;
       }
 
-      const totpFactor = factorsData.totp[0];
-      if (!totpFactor) {
-        setIsLoading(false);
-        await logAuditEvent('USER_LOGIN_FAIL', { details: { email, error: "User has no TOTP factor enrolled but MFA is required." }, target_entity: 'user' });
+      if (!data.session) {
+        // MFA is required
+        const { data: factorsData, error: mfaError } = await supabase.auth.mfa.listFactors();
+
+        if (mfaError) {
+          toast({
+            title: "Could not retrieve MFA factors",
+            description: mfaError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const totpFactor = factorsData.totp[0];
+        if (!totpFactor) {
+          await logAuditEvent('USER_LOGIN_FAIL', { 
+            details: { email, error: "User has no TOTP factor enrolled but MFA is required." }, 
+            target_entity: 'user' 
+          });
+          toast({
+            title: "MFA Required, but no authenticator app is set up.",
+            description: "Please contact support if you've lost access.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        setFactorId(totpFactor.id);
+        setMfaRequired(true);
         toast({
-          title: "MFA Required, but no authenticator app is set up.",
-          description: "Please contact support if you've lost access.",
-          variant: "destructive",
+          title: "Two-Factor Authentication Required",
+          description: "Please enter your authenticator code.",
         });
-        return;
-      }
-      
-      setFactorId(totpFactor.id);
-      setIsLoading(false);
-      setMfaRequired(true);
-      toast({
-        title: "Two-Factor Authentication Required",
-        description: "Please enter your authenticator code.",
-      });
-    } else {
-      setIsLoading(false);
-      await logAuditEvent('USER_LOGIN_SUCCESS', { details: { email }, target_entity: 'user', target_id: data.session.user.id });
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast({
+      } else {
+        await logAuditEvent('USER_LOGIN_SUCCESS', { 
+          details: { email }, 
+          target_entity: 'user', 
+          target_id: data.session.user.id 
+        });
+        queryClient.invalidateQueries({ queryKey: ['profile'] });
+        toast({
           title: "Welcome back!",
           description: "You have been successfully signed in.",
+        });
+        // Don't navigate here - let the auth context handle it
+      }
+    } catch (error) {
+      console.error('Unexpected sign in error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,42 +109,58 @@ const SignInPage = () => {
     setIsLoading(true);
 
     if (!factorId) {
-      setIsLoading(false);
       toast({
         title: "An error occurred",
         description: "MFA factor ID is missing. Please try signing in again.",
         variant: "destructive",
       });
       setMfaRequired(false);
+      setIsLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.mfa.challengeAndVerify({
-      factorId,
-      code: otp,
-    });
-    
-    setIsLoading(false);
-    
-    if (error) {
-      await logAuditEvent('USER_MFA_VERIFICATION_FAIL', { details: { email, error: error.message }, target_entity: 'user' });
+    try {
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
+        factorId,
+        code: otp,
+      });
+      
+      if (error) {
+        await logAuditEvent('USER_MFA_VERIFICATION_FAIL', { 
+          details: { email, error: error.message }, 
+          target_entity: 'user' 
+        });
+        toast({
+          title: "Verification Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await logAuditEvent('USER_MFA_VERIFICATION_SUCCESS', { 
+        details: { email }, 
+        target_entity: 'user' 
+      });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
-        title: "Verification Failed",
-        description: error.message,
+        title: "Welcome back!",
+        description: "You have been successfully signed in.",
+      });
+      setOtp('');
+      setMfaRequired(false);
+      setFactorId(null);
+      // Don't navigate here - let the auth context handle it
+    } catch (error) {
+      console.error('Unexpected MFA error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    await logAuditEvent('USER_MFA_VERIFICATION_SUCCESS', { details: { email }, target_entity: 'user' });
-    queryClient.invalidateQueries({ queryKey: ['profile'] });
-    toast({
-      title: "Welcome back!",
-      description: "You have been successfully signed in.",
-    });
-    setOtp('');
-    setMfaRequired(false);
-    setFactorId(null);
   };
 
   return (
