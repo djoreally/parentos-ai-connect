@@ -30,43 +30,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     console.log("[AuthContext] Fetching profile for user:", userId);
     try {
-      const { data: userProfile, error } = await supabase
+      // First, try to get existing profile
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
       
-      if (error) {
-        console.error("[AuthContext] Profile fetch error:", error);
+      if (fetchError) {
+        console.error("[AuthContext] Profile fetch error:", fetchError);
         return null;
       }
       
-      console.log("[AuthContext] Profile fetch result:", userProfile);
+      console.log("[AuthContext] Existing profile found:", existingProfile);
       
-      // If no profile exists, create one
-      if (!userProfile) {
-        console.log("[AuthContext] No profile found, creating one...");
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert([{ 
-            id: userId,
-            first_name: null,
-            last_name: null,
-            role: null
-          }])
-          .select()
-          .single();
-          
-        if (createError) {
-          console.error("[AuthContext] Error creating profile:", createError);
-          return null;
-        }
-        
-        console.log("[AuthContext] Created new profile:", newProfile);
-        return newProfile as Profile;
+      // If profile exists, return it
+      if (existingProfile) {
+        return existingProfile as Profile;
       }
       
-      return userProfile as Profile;
+      // If no profile exists, create one
+      console.log("[AuthContext] No profile found, creating one...");
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({ 
+          id: userId,
+          first_name: null,
+          last_name: null,
+          role: null
+        })
+        .select()
+        .single();
+        
+      if (createError) {
+        console.error("[AuthContext] Error creating profile:", createError);
+        return null;
+      }
+      
+      console.log("[AuthContext] Created new profile:", newProfile);
+      return newProfile as Profile;
     } catch (err) {
       console.error("[AuthContext] Profile fetch exception:", err);
       return null;
@@ -83,7 +85,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          console.log("[AuthContext] User found, fetching profile...");
           const userProfile = await fetchUserProfile(session.user.id);
+          console.log("[AuthContext] Profile result:", userProfile);
           setProfile(userProfile);
 
           if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
@@ -95,6 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
           }
         } else {
+          console.log("[AuthContext] No user, setting profile to null");
           setProfile(null);
         }
         console.log("[AuthContext] setLoading(false) from onAuthStateChange");
@@ -111,7 +116,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log("[AuthContext] Initial user found, fetching profile...");
           const userProfile = await fetchUserProfile(session.user.id);
+          console.log("[AuthContext] Initial profile result:", userProfile);
           setProfile(userProfile);
         }
       } catch (error) {
