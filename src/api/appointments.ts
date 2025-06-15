@@ -63,7 +63,7 @@ export const getCareTeamForChild = async (childId: string): Promise<CareTeamMemb
 };
 
 export const createAppointment = async (
-  appointmentData: Omit<Tables<'appointments'>, 'id' | 'created_at' | 'google_meet_link' | 'status'>,
+  appointmentData: Omit<Tables<'appointments'>, 'id' | 'created_at' | 'google_meet_link' | 'google_event_id' | 'status'>,
   participantIds: string[]
 ): Promise<Tables<'appointments'>> => {
   const { data: appointment, error: appointmentError } = await supabase

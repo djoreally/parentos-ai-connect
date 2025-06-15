@@ -17,9 +17,9 @@ const FullPageLoader = () => (
 );
 
 const PublicRoute = ({ children }: { children: JSX.Element }) => {
-  const { user, profile, isLoading } = useAuth();
+  const { user, profile, loading } = useAuth();
 
-  if (isLoading) {
+  if (loading) {
     return <FullPageLoader />;
   }
 

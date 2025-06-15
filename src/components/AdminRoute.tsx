@@ -5,10 +5,10 @@ import { ReactNode } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AdminRoute = ({ children }: { children: ReactNode }) => {
-  const { session, profile, isLoading } = useAuth();
+  const { session, profile, loading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
           <div className="flex-grow container mx-auto px-4 md:px-8 py-12 flex items-center justify-center">

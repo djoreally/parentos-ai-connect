@@ -17,10 +17,10 @@ const FullPageLoader = () => (
 );
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { user, profile, isLoading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (loading) {
     return <FullPageLoader />;
   }
 
