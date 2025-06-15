@@ -2,39 +2,34 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const FullPageLoader = () => (
-  <div className="h-screen w-screen flex items-center justify-center bg-background">
-    <div className="flex flex-col items-center space-y-4">
-      <Skeleton className="h-12 w-12 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-[250px]" />
-        <Skeleton className="h-4 w-[200px]" />
-      </div>
-    </div>
-  </div>
-);
+import AuthLoadingSpinner from '@/components/AuthLoadingSpinner';
 
 const PublicRoute = ({ children }: { children: JSX.Element }) => {
-  const { isAuthenticated, hasProfile, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
 
-  // Show loading while checking auth state
   if (loading) {
-    return <FullPageLoader />;
+    return <AuthLoadingSpinner />;
   }
 
-  // If user is authenticated and has a profile with role, redirect to dashboard
-  if (isAuthenticated && hasProfile) {
-    return <Navigate to="/dashboard" replace />;
+  // If user is logged in and has completed role selection, redirect to dashboard
+  if (user && profile?.role) {
+    if (profile.role === 'Admin') {
+      return <Navigate to="/compliance" replace />;
+    }
+    if (profile.role === 'Parent') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    if (profile.role === 'Teacher' || profile.role === 'Doctor') {
+      return <Navigate to="/team-dashboard" replace />;
+    }
   }
 
-  // If user is authenticated but no role selected, redirect to role selection
-  if (isAuthenticated && !hasProfile) {
+  // If user is logged in but hasn't selected role, redirect to role selection
+  if (user && !profile?.role) {
     return <Navigate to="/select-role" replace />;
   }
 
-  // Show the public page (login/register)
+  // User is not logged in, show the public page
   return children;
 };
 

@@ -3,16 +3,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
-import { useQueryClient } from '@tanstack/react-query';
-import { upsertUserToken } from '@/api/userTokens';
 
 type AuthContextType = {
   user: User | null;
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  isAuthenticated: boolean;
-  hasProfile: boolean;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,8 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   session: null,
   loading: true,
-  isAuthenticated: false,
-  hasProfile: false,
+  signOut: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -29,13 +25,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const queryClient = useQueryClient();
 
-  const createProfileForUser = async (userId: string): Promise<Profile | null> => {
+  const fetchOrCreateProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      const { data: newProfile, error } = await supabase
+      // First try to get existing profile
+      const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
-        .insert({ 
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching profile:', fetchError);
+        return null;
+      }
+
+      if (existingProfile) {
+        return existingProfile as Profile;
+      }
+
+      // Create new profile if it doesn't exist
+      const { data: newProfile, error: createError } = await supabase
+        .from('profiles')
+        .insert({
           id: userId,
           first_name: null,
           last_name: null,
@@ -43,51 +55,61 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         })
         .select()
         .single();
-        
-      if (error) {
-        console.error("Error creating profile:", error);
+
+      if (createError) {
+        console.error('Error creating profile:', createError);
         return null;
       }
-      
+
       return newProfile as Profile;
-    } catch (err) {
-      console.error("Profile creation exception:", err);
+    } catch (error) {
+      console.error('Profile operation error:', error);
       return null;
     }
   };
 
-  const fetchProfile = async (userId: string): Promise<Profile | null> => {
-    try {
-      const { data: existingProfile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (error) {
-        console.error("Profile fetch error:", error);
-        return null;
-      }
-      
-      if (existingProfile) {
-        return existingProfile as Profile;
-      }
-      
-      // No profile exists, create one
-      return await createProfileForUser(userId);
-    } catch (err) {
-      console.error("Profile fetch exception:", err);
-      return null;
-    }
+  const signOut = async () => {
+    await supabase.auth.signOut();
   };
 
   useEffect(() => {
     let mounted = true;
 
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (session && mounted) {
+          setSession(session);
+          setUser(session.user);
+          
+          const userProfile = await fetchOrCreateProfile(session.user.id);
+          if (mounted) {
+            setProfile(userProfile);
+          }
+        }
+      } catch (error) {
+        console.error('Session initialization error:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
+        console.log('Auth event:', event, session?.user?.email);
         
         if (!mounted) return;
 
@@ -95,18 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // Handle Google token storage
-          if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
-            try {
-              await upsertUserToken(session);
-              queryClient.invalidateQueries({ queryKey: ['googleToken'] });
-            } catch (error) {
-              console.error("Failed to upsert user token", error);
-            }
-          }
-
-          // Fetch or create profile
-          const userProfile = await fetchProfile(session.user.id);
+          const userProfile = await fetchOrCreateProfile(session.user.id);
           if (mounted) {
             setProfile(userProfile);
           }
@@ -120,52 +131,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Get initial session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Error getting session:", error);
-          if (mounted) {
-            setLoading(false);
-          }
-          return;
-        }
-
-        if (session?.user && mounted) {
-          setSession(session);
-          setUser(session.user);
-          
-          const userProfile = await fetchProfile(session.user.id);
-          if (mounted) {
-            setProfile(userProfile);
-          }
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-    
-    initializeAuth();
+    getInitialSession();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [queryClient]);
+  }, []);
 
   const value = {
     user,
     profile,
     session,
     loading,
-    isAuthenticated: !!user,
-    hasProfile: !!profile?.role,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

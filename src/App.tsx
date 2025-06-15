@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,60 +15,39 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "next-themes";
 import TeamDashboardPage from "./pages/TeamDashboardPage";
 import AddChildPage from "./pages/AddChildPage";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import AdminRoute from "./components/AdminRoute";
 import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 import LegalPage from "./pages/LegalPage";
 import PrivacyPage from "./pages/PrivacyPage";
-import { useEffect } from "react";
-import { usePostHog } from "posthog-js/react";
 import SettingsPage from "./pages/SettingsPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppointmentsPage from "./pages/AppointmentsPage";
 
 const queryClient = new QueryClient();
 
-const PostHogUserTracker = () => {
-  const { user, profile } = useAuth();
-  const posthog = usePostHog();
-
-  useEffect(() => {
-    if (user && profile && posthog) {
-      const fullName = `${profile.first_name || ""} ${
-        profile.last_name || ""
-      }`.trim();
-      posthog.identify(user.id, {
-        email: user.email,
-        name: fullName,
-      });
-    } else if (!user && posthog) {
-      posthog.reset();
-    }
-  }, [user, profile, posthog]);
-
-  return null;
-};
-
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ErrorBoundary>
-          <PostHogUserTracker />
           <TooltipProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
               <Routes>
+                {/* Public pages - no auth required */}
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/legal" element={<LegalPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
 
+                {/* Auth pages - redirect if already authenticated */}
                 <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
                 <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
                 
+                {/* Protected pages - require authentication */}
                 <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
@@ -76,6 +56,8 @@ const App = () => (
                 <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                 <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
+                
+                {/* Admin only pages */}
                 <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
                 
                 <Route path="*" element={<NotFound />} />
