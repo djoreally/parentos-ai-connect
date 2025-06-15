@@ -19,12 +19,14 @@ const RegisterPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Sign up form submitted');
     if (password !== confirmPassword) {
       toast({
         title: "Error",
         description: "Passwords do not match.",
         variant: "destructive",
       });
+      console.log('Passwords do not match');
       return;
     }
 
@@ -36,56 +38,73 @@ const RegisterPage = () => {
         description: "Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.",
         variant: "destructive",
       });
+      console.log('Weak password');
       return;
     }
 
     setIsLoading(true);
+    console.log('Set loading true, about to sign up with Supabase');
 
-    // Sign up user via Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      setIsLoading(false);
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
+    try {
+      // Sign up user via Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
       });
-      return;
-    }
+      console.log('Supabase signup result', { data, error });
 
-    // After signup, update the profile role to 'Parent'
-    // The profile is created automatically via trigger, so we just update it.
-    if (data?.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ role: 'Parent' })
-        .eq('id', data.user.id);
-
-      setIsLoading(false);
-      if (profileError) {
+      if (error) {
         toast({
-          title: "Profile setup failed",
-          description: "Account created, but could not finish setup. Please contact support.",
+          title: "Sign up failed",
+          description: error.message,
           variant: "destructive",
         });
+        console.log('Supabase signup error:', error);
         return;
       }
-    } else {
-      setIsLoading(false);
-    }
 
-    toast({
-      title: "Success!",
-      description: "Account created. Please check your email to confirm your account.",
-    });
-    navigate('/login');
+      // After signup, update the profile role to 'Parent'
+      // The profile is created automatically via trigger, so we just update it.
+      if (data?.user) {
+        console.log('User created, updating profile role to Parent');
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ role: 'Parent' })
+          .eq('id', data.user.id);
+        console.log('Profile update result', { profileError });
+
+        if (profileError) {
+          toast({
+            title: "Profile setup failed",
+            description: "Account created, but could not finish setup. Please contact support.",
+            variant: "destructive",
+          });
+          console.log('Profile update failed:', profileError);
+          return;
+        }
+      }
+
+      toast({
+        title: "Success!",
+        description: "Account created. Please check your email to confirm your account.",
+      });
+      console.log('Signup complete, redirecting to login');
+      navigate('/login');
+    } catch (err) {
+      // Catch unexpected exceptions and log
+      toast({
+        title: "Unexpected error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Unhandled error during signup:', err);
+    } finally {
+      setIsLoading(false);
+      console.log('Set loading false (finally block)');
+    }
   };
 
   return (
@@ -149,4 +168,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-
