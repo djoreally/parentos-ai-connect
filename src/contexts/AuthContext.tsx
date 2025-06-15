@@ -42,6 +42,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       
       console.log("[AuthContext] Profile fetch result:", userProfile);
+      
+      // If no profile exists, create one
+      if (!userProfile) {
+        console.log("[AuthContext] No profile found, creating one...");
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{ 
+            id: userId,
+            first_name: null,
+            last_name: null,
+            role: null
+          }])
+          .select()
+          .single();
+          
+        if (createError) {
+          console.error("[AuthContext] Error creating profile:", createError);
+          return null;
+        }
+        
+        console.log("[AuthContext] Created new profile:", newProfile);
+        return newProfile as Profile;
+      }
+      
       return userProfile as Profile;
     } catch (err) {
       console.error("[AuthContext] Profile fetch exception:", err);
