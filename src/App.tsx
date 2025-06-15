@@ -27,14 +27,20 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import NetworkErrorHandler from "./components/NetworkErrorHandler";
 import { toast } from 'sonner';
+import { initializeSecurity } from './utils/security';
+import { useEffect } from 'react';
 
-// Create query client with proper error handling
+// Create query client with enhanced security and error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: any) => {
         // Don't retry on authentication errors
         if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+          return false;
+        }
+        // Don't retry on 4xx errors (client errors)
+        if (error?.status >= 400 && error?.status < 500) {
           return false;
         }
         // Retry up to 3 times for other errors
@@ -50,58 +56,70 @@ const queryClient = new QueryClient({
         if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
           return false;
         }
+        // Don't retry on 4xx errors
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
         // Retry once for network errors
         return failureCount < 1;
       },
       onError: (error: any) => {
         console.error('Mutation error:', error);
-        toast.error(error?.message || 'An unexpected error occurred');
+        // Only show generic error message to prevent information leakage
+        toast.error('An error occurred. Please try again.');
       },
     },
   },
 });
 
-const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ErrorBoundary>
-          <TooltipProvider>
-            <NetworkErrorHandler />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                {/* Public pages - no auth required */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/legal" element={<LegalPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
+const App = () => {
+  useEffect(() => {
+    // Initialize security measures on app start
+    initializeSecurity();
+  }, []);
 
-                {/* Auth pages - redirect if already authenticated */}
-                <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
-                <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-                
-                {/* Protected pages - require authentication */}
-                <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
-                <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
-                <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
-                <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
-                
-                {/* Admin only pages */}
-                <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ErrorBoundary>
-      </AuthProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ErrorBoundary>
+            <TooltipProvider>
+              <NetworkErrorHandler />
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Public pages - no auth required */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/legal" element={<LegalPage />} />
+                  <Route path="/privacy" element={<PrivacyPage />} />
+
+                  {/* Auth pages - redirect if already authenticated */}
+                  <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
+                  <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                  
+                  {/* Protected pages - require authentication */}
+                  <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
+                  <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
+                  <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
+                  <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                  <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
+                  
+                  {/* Admin only pages */}
+                  <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
+                  
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ErrorBoundary>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  );
+};
 
 export default App;

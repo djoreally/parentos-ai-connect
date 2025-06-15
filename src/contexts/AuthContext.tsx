@@ -5,7 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 import { AuthContextType, AuthState } from '@/types/auth';
 import { useProfileManager } from '@/hooks/useProfileManager';
-import { signOutUser, getInitialSession } from '@/utils/authSession';
+import { signOutUser, getInitialSession, refreshSession } from '@/utils/authSession';
+import { handleSecurityError } from '@/utils/errorHandler';
+import { SECURITY_CONFIG } from '@/utils/security';
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -27,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initialLoadComplete: false,
   });
 
-  const { fetchOrCreateProfile, profileError, setProfileError } = useProfileManager();
+  const { fetchOrCreateProfile, updateProfile, profileError, setProfileError } = useProfileManager();
 
   const updateAuthState = (updates: Partial<AuthState>) => {
     setAuthState(prev => ({ ...prev, ...updates }));
@@ -42,7 +44,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       updateAuthState({ profile: userProfile });
     } catch (error: any) {
       console.error('Error refreshing profile:', error);
-      updateAuthState({ error: `Failed to refresh profile: ${error.message}` });
+      handleSecurityError(error, false);
+      updateAuthState({ error: 'Failed to refresh profile' });
     }
   };
 
@@ -52,6 +55,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       updateAuthState({ error });
     }
   };
+
+  // Auto-refresh session before expiration
+  useEffect(() => {
+    if (!authState.session) return;
+
+    const expiresAt = authState.session.expires_at;
+    if (!expiresAt) return;
+
+    const expirationTime = expiresAt * 1000; // Convert to milliseconds
+    const refreshTime = expirationTime - SECURITY_CONFIG.SESSION.REFRESH_THRESHOLD;
+    const timeUntilRefresh = refreshTime - Date.now();
+
+    if (timeUntilRefresh > 0) {
+      const refreshTimer = setTimeout(async () => {
+        try {
+          const { session, error } = await refreshSession();
+          if (error) {
+            console.error('Auto-refresh failed:', error);
+            await signOut();
+          } else if (session) {
+            updateAuthState({ session, user: session.user });
+          }
+        } catch (error) {
+          console.error('Auto-refresh error:', error);
+          await signOut();
+        }
+      }, timeUntilRefresh);
+
+      return () => clearTimeout(refreshTimer);
+    }
+  }, [authState.session]);
 
   useEffect(() => {
     let mounted = true;
@@ -121,7 +155,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } catch (error: any) {
           console.error('Auth state change error:', error);
-          updateAuthState({ error: `Auth error: ${error.message}` });
+          handleSecurityError(error, false);
+          updateAuthState({ error: 'Authentication error occurred' });
         } finally {
           if (mounted) {
             updateAuthState({ loading: false });
