@@ -141,7 +141,7 @@ const Dashboard = () => {
             )}
           </div>
 
-          <div className="grid gap-12 md:grid-cols-3">
+          <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
             <Timeline 
               logs={logs}
               isLoading={isLoadingLogs}
