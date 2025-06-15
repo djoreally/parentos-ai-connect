@@ -48,8 +48,6 @@ DOMPurify.addHook('beforeSanitizeAttributes', function (node) {
 /**
  * Sanitizes a string to remove any potentially malicious HTML.
  * Uses DOMPurify with strict security configuration.
- * @param dirty The string to sanitize.
- * @returns The sanitized string.
  */
 export const sanitize = (dirty: string): string => {
   if (!dirty || typeof dirty !== 'string') {
@@ -84,8 +82,6 @@ export const sanitize = (dirty: string): string => {
 
 /**
  * Sanitizes text for display in forms and inputs
- * @param text The text to sanitize
- * @returns Clean text safe for display
  */
 export const sanitizeText = (text: string): string => {
   if (!text || typeof text !== 'string') {
@@ -104,8 +100,6 @@ export const sanitizeText = (text: string): string => {
 
 /**
  * Validates that a string doesn't contain obvious security threats
- * @param input The input to check
- * @returns true if threats are detected
  */
 function containsObviousThreats(input: string): boolean {
   const threats = [
@@ -126,8 +120,6 @@ function containsObviousThreats(input: string): boolean {
 
 /**
  * Final validation to ensure sanitization was effective
- * @param cleaned The cleaned string
- * @returns true if threats still detected
  */
 function stillContainsThreats(cleaned: string): boolean {
   const postSanitizationThreats = [
@@ -141,8 +133,6 @@ function stillContainsThreats(cleaned: string): boolean {
 
 /**
  * Sanitizes JSON data recursively
- * @param data The data to sanitize
- * @returns Sanitized data
  */
 export const sanitizeObject = (data: any): any => {
   if (typeof data === 'string') {
