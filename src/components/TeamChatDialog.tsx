@@ -45,8 +45,6 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
     mutationFn: (content: string) => sendMessage(childId, content),
     onSuccess: () => {
       setNewMessage('');
-      // Invalidate and refetch messages
-      queryClient.invalidateQueries({ queryKey: ['messages', childId] });
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully.",
@@ -62,6 +60,7 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
     },
   });
 
+  // Set up real-time subscription for new messages
   useEffect(() => {
     if (!childId || !isOpen) return;
 
@@ -78,9 +77,10 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
           filter: `child_id=eq.${childId}`,
         },
         async (payload) => {
-          console.log('New message received:', payload);
+          console.log('New message received via realtime:', payload);
           
           try {
+            // Fetch the profile data for the new message
             const { data: profile } = await supabase
               .from('profiles')
               .select('first_name, last_name')
@@ -92,20 +92,34 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
               profiles: profile,
             } as Message;
             
+            // Add the new message to the cache immediately
             queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
-              return oldData ? [...oldData, newMessageWithProfile] : [newMessageWithProfile];
+              if (!oldData) return [newMessageWithProfile];
+              
+              // Check if message already exists to avoid duplicates
+              const messageExists = oldData.some(msg => msg.id === newMessageWithProfile.id);
+              if (messageExists) return oldData;
+              
+              return [...oldData, newMessageWithProfile];
             });
           } catch (error) {
             console.error('Error fetching profile for new message:', error);
             // Still add the message without profile info
             queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
-              return oldData ? [...oldData, payload.new as Message] : [payload.new as Message];
+              const newMessage = payload.new as Message;
+              if (!oldData) return [newMessage];
+              
+              // Check if message already exists to avoid duplicates
+              const messageExists = oldData.some(msg => msg.id === newMessage.id);
+              if (messageExists) return oldData;
+              
+              return [...oldData, newMessage];
             });
           }
         }
       )
       .subscribe((status) => {
-        console.log('Subscription status:', status);
+        console.log('Realtime subscription status:', status);
       });
 
     return () => {
@@ -114,6 +128,7 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
     };
   }, [childId, queryClient, isOpen]);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (viewportRef.current) {
       viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
