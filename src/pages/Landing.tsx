@@ -49,27 +49,6 @@ const LandingPage = () => {
     },
   ];
 
-  const testimonials = [
-    {
-      name: 'Sarah Miller',
-      role: 'Parent',
-      quote: "Parentrak has transformed how we support our child. The unified timeline makes it easy to stay informed and collaborate with teachers and doctors.",
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop',
-    },
-    {
-      name: 'David Chen',
-      role: 'Parent',
-      quote: "I love the progress tracking feature. It's so helpful to see my child's development over time and identify areas where we can provide extra support.",
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop',
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Parent',
-      quote: "Parentrak has been a game-changer for our family. It's brought everyone together and ensured we're all on the same page about our child's needs.",
-      image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
-    },
-  ];
-
   const faqs = [
     {
       question: "How is my child's data kept private and secure?",
@@ -189,22 +168,6 @@ const LandingPage = () => {
                   title={useCase.title}
                   description={useCase.description}
                   image={useCase.image}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* Testimonials Section */}
-          <section id="testimonials">
-            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Testimonials</h2>
-            <div className="flex overflow-x-auto p-4 gap-3 [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {testimonials.map((testimonial) => (
-                <TestimonialCard
-                  key={testimonial.name}
-                  name={testimonial.name}
-                  role={testimonial.role}
-                  quote={testimonial.quote}
-                  image={testimonial.image}
                 />
               ))}
             </div>
