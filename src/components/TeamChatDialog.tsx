@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMessages, sendMessage } from '@/api/messages';
@@ -19,6 +20,7 @@ import { Send } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './ui/skeleton';
+import { toast } from '@/hooks/use-toast';
 
 interface TeamChatDialogProps {
   childId: string;
@@ -43,14 +45,27 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
     mutationFn: (content: string) => sendMessage(childId, content),
     onSuccess: () => {
       setNewMessage('');
+      // Invalidate and refetch messages
+      queryClient.invalidateQueries({ queryKey: ['messages', childId] });
+      toast({
+        title: "Message sent",
+        description: "Your message has been sent successfully.",
+      });
     },
     onError: (error) => {
       console.error("Failed to send message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
   useEffect(() => {
     if (!childId || !isOpen) return;
+
+    console.log('Setting up real-time subscription for child:', childId);
 
     const channel = supabase
       .channel(`team-chat-${childId}`)
@@ -63,20 +78,38 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
           filter: `child_id=eq.${childId}`,
         },
         async (payload) => {
-          const { data: profile } = await supabase.from('profiles').select('first_name, last_name').eq('id', payload.new.user_id).single();
-          const newMessageWithProfile = {
-            ...payload.new,
-            profiles: profile,
-          } as Message;
+          console.log('New message received:', payload);
           
-          queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
-            return oldData ? [...oldData, newMessageWithProfile] : [newMessageWithProfile];
-          });
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', payload.new.user_id)
+              .single();
+            
+            const newMessageWithProfile = {
+              ...payload.new,
+              profiles: profile,
+            } as Message;
+            
+            queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
+              return oldData ? [...oldData, newMessageWithProfile] : [newMessageWithProfile];
+            });
+          } catch (error) {
+            console.error('Error fetching profile for new message:', error);
+            // Still add the message without profile info
+            queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
+              return oldData ? [...oldData, payload.new as Message] : [payload.new as Message];
+            });
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, [childId, queryClient, isOpen]);
@@ -89,9 +122,19 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim()) {
-      sendMessageMutation.mutate(newMessage.trim());
+    const trimmedMessage = newMessage.trim();
+    
+    if (!trimmedMessage) {
+      toast({
+        title: "Empty message",
+        description: "Please enter a message before sending.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    console.log('Sending message:', trimmedMessage);
+    sendMessageMutation.mutate(trimmedMessage);
   };
   
   const getInitials = (firstName: string | null, lastName: string | null) => {
@@ -117,6 +160,11 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
                   <div className="flex items-start gap-3"><Skeleton className="w-10 h-10 rounded-full" /><Skeleton className="h-16 w-48" /></div>
                   <div className="flex items-start gap-3 flex-row-reverse"><Skeleton className="w-10 h-10 rounded-full" /><Skeleton className="h-24 w-64" /></div>
                   <div className="flex items-start gap-3"><Skeleton className="w-10 h-10 rounded-full" /><Skeleton className="h-12 w-32" /></div>
+                </div>
+              )}
+              {!isLoading && messages.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  No messages yet. Start the conversation!
                 </div>
               )}
               {messages.map((message) => (
