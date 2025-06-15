@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -80,19 +79,25 @@ serve(async (req) => {
     }
     // --- END ANONYMIZATION LOGIC ---
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
     const prompt = `Analyze the following child development logs and provide 2-3 key insights as a JSON array of objects. Each object must have 'iconName', 'text', and 'color' properties.
 Available iconName values are: 'BedDouble', 'TrendingDown', 'Users', 'BrainCircuit'.
 Available color values are: 'text-red-500', 'text-amber-600', 'text-green-600', 'text-gray-500'.
 The insights should identify patterns, correlations, or notable trends. Be concise and empathetic.
-Respond with only the raw JSON array, without any surrounding text or markdown.
+IMPORTANT: Respond with ONLY the raw JSON array. Do not include any other text, explanations, or markdown formatting like \`\`\`json. Your entire response should be parsable as JSON.
 Logs:\n\n${JSON.stringify(anonymizedLogs, null, 2)}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    let text = response.text();
     
+    // The model might still occasionally wrap the JSON in markdown. This removes it.
+    const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch && jsonMatch[1]) {
+        text = jsonMatch[1];
+    }
+
     const insights = JSON.parse(text);
 
     return new Response(JSON.stringify({ insights }), {
