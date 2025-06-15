@@ -25,8 +25,41 @@ import PrivacyPage from "./pages/PrivacyPage";
 import SettingsPage from "./pages/SettingsPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppointmentsPage from "./pages/AppointmentsPage";
+import NetworkErrorHandler from "./components/NetworkErrorHandler";
+import { toast } from 'sonner';
 
-const queryClient = new QueryClient();
+// Create query client with proper error handling
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error: any) => {
+        // Don't retry on authentication errors
+        if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+          return false;
+        }
+        // Retry up to 3 times for other errors
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+    mutations: {
+      retry: (failureCount, error: any) => {
+        // Don't retry mutations on authentication errors
+        if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+          return false;
+        }
+        // Retry once for network errors
+        return failureCount < 1;
+      },
+      onError: (error: any) => {
+        console.error('Mutation error:', error);
+        toast.error(error?.message || 'An unexpected error occurred');
+      },
+    },
+  },
+});
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -34,6 +67,7 @@ const App = () => (
       <AuthProvider>
         <ErrorBoundary>
           <TooltipProvider>
+            <NetworkErrorHandler />
             <Toaster />
             <Sonner />
             <BrowserRouter>

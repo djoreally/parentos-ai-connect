@@ -15,22 +15,32 @@ import QuickActions from '@/components/dashboard/QuickActions';
 import Timeline from '@/components/dashboard/Timeline';
 import { Button } from '@/components/ui/button';
 import { MilestoneTracker } from '@/components/milestones/MilestoneTracker';
-import { Rocket } from 'lucide-react';
+import { Rocket, AlertCircle, RefreshCw } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/dashboard/LoadingStates';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const LOGS_PER_PAGE = 5;
 
 const Dashboard = () => {
-  const { data: children, isLoading: isLoadingChildren } = useQuery<Child[]>({
-    queryKey: ['children'],
-    queryFn: getChildren,
-  });
-
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
   const [showMilestoneTracker, setShowMilestoneTracker] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   
+  const { 
+    data: children, 
+    isLoading: isLoadingChildren, 
+    error: childrenError,
+    refetch: refetchChildren 
+  } = useQuery<Child[]>({
+    queryKey: ['children'],
+    queryFn: getChildren,
+    retry: 3,
+    retryDelay: 1000,
+  });
+
   useEffect(() => {
     if (children && children.length > 0 && !selectedChildId) {
       setSelectedChildId(children[0].id);
@@ -38,13 +48,20 @@ const Dashboard = () => {
   }, [children, selectedChildId]);
   
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when child changes
+    setCurrentPage(1);
   }, [selectedChildId]);
 
-  const { data: logsData, isLoading: isLoadingLogs, isError } = useQuery<{logs: LogEntry[], count: number}>({
+  const { 
+    data: logsData, 
+    isLoading: isLoadingLogs, 
+    error: logsError,
+    refetch: refetchLogs 
+  } = useQuery<{logs: LogEntry[], count: number}>({
     queryKey: ['logs', selectedChildId, currentPage],
     queryFn: () => getLogs(selectedChildId!, currentPage),
     enabled: !!selectedChildId && !showMilestoneTracker,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const logs = logsData?.logs;
@@ -86,8 +103,6 @@ const Dashboard = () => {
     };
   }, [selectedChildId, queryClient]);
 
-  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
-
   const handleNotificationClick = (notification: AppNotification) => {
     if (notification.type === 'new_message' && notification.child_id) {
       setSelectedChildId(notification.child_id);
@@ -97,14 +112,48 @@ const Dashboard = () => {
 
   const selectedChild = children?.find(child => child.id === selectedChildId);
 
+  // Show loading skeleton during initial auth load
+  if (authLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  // Handle children loading error
+  if (childrenError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>Failed to load children profiles. Please try again.</span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => refetchChildren()}
+                className="ml-4"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </main>
+      </div>
+    );
+  }
+
   if (showMilestoneTracker && selectedChild) {
     return (
-        <div className="min-h-screen bg-background">
-            <Header />
-            <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
-                <MilestoneTracker selectedChild={selectedChild} onBack={() => setShowMilestoneTracker(false)} />
-            </main>
-        </div>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
+          <MilestoneTracker 
+            selectedChild={selectedChild} 
+            onBack={() => setShowMilestoneTracker(false)} 
+          />
+        </main>
+      </div>
     );
   }
 
@@ -113,7 +162,6 @@ const Dashboard = () => {
       <Header />
       <main className="container mx-auto px-4 md:px-8 pb-12">
         <div className="space-y-8">
-          
           <DashboardHeader
             children={children}
             selectedChild={selectedChild}
@@ -133,19 +181,37 @@ const Dashboard = () => {
               isChatModalOpen={isChatModalOpen}
               onChatModalOpenChange={setIsChatModalOpen}
             />
-             {selectedChild && (
-                <Button onClick={() => setShowMilestoneTracker(true)} className="w-full lg:w-auto shrink-0">
-                  <Rocket className="mr-2 h-4 w-4" />
-                  Track Milestones
-                </Button>
+            {selectedChild && (
+              <Button onClick={() => setShowMilestoneTracker(true)} className="w-full lg:w-auto shrink-0">
+                <Rocket className="mr-2 h-4 w-4" />
+                Track Milestones
+              </Button>
             )}
           </div>
+
+          {logsError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>Failed to load logs. Please try again.</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => refetchLogs()}
+                  className="ml-4"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
             <Timeline 
               logs={logs}
               isLoading={isLoadingLogs}
-              isError={isError}
+              isError={!!logsError}
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
