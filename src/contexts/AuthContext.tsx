@@ -41,12 +41,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
           if (error) {
             console.log("[AuthContext] profile fetch error:", error);
           }
           console.log("[AuthContext] profile loaded:", userProfile); // DEBUG
-          setProfile(userProfile as Profile);
+          setProfile(userProfile as Profile || null);
 
           if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
             try {
@@ -74,12 +74,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
         if (error) {
           console.log("[AuthContext] profile fetch error (initial):", error);
         }
         console.log("[AuthContext] profile loaded (initial):", userProfile); // DEBUG
-        setProfile(userProfile as Profile);
+        setProfile(userProfile as Profile || null);
       }
       console.log("[AuthContext] setLoading(false) from checkInitialSession"); // DEBUG
       setLoading(false);
