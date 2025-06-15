@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BrainCircuit } from 'lucide-react';
@@ -6,7 +7,7 @@ const LandingHeader = () => {
   const navLinks = [
     { title: 'About', href: '#about' },
     { title: 'Features', href: '#features' },
-    { title: 'Testimonials', href: '#testimonials' },
+    { title: 'Use Cases', href: '#use-cases' },
     { title: 'FAQ', href: '#faq' },
     { title: 'Pricing', href: '#pricing' },
   ];
