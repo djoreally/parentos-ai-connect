@@ -19,14 +19,14 @@ const LogCategory = ({ title, logs }: { title: string; logs: LogEntry[] }) => {
         <div className="space-y-4">
           {logs.map((log) => (
             <div key={log.id} className="p-4 border rounded-md bg-muted/20">
-              <div className="flex justify-between items-start mb-2 gap-2">
-                <div>
+              <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
+                <div className="flex-grow">
                   <p className="font-semibold">{log.original_entry.title}</p>
                   <p className="text-sm text-muted-foreground">
                     {new Date(log.timestamp).toLocaleString()} by {log.author}
                   </p>
                 </div>
-                 <div className="flex flex-wrap gap-1 justify-end max-w-[50%]">
+                 <div className="flex flex-wrap gap-1 justify-start sm:justify-end w-full sm:w-auto sm:max-w-[50%] shrink-0">
                     {log.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                 </div>
               </div>

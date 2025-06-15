@@ -29,13 +29,13 @@ const TeamDashboardPage = () => {
                     <div>
                         <h2 className="text-xl font-semibold text-foreground mb-4">Your Connected Children</h2>
                         {isLoading ? (
-                             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                 <Skeleton className="h-48 w-full" />
                                 <Skeleton className="h-48 w-full" />
                                 <Skeleton className="h-48 w-full" />
                              </div>
                         ) : children && children.length > 0 ? (
-                            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                                 {children.map(child => (
                                     <Link key={child.id} to={`/child/${child.id}`} className="block rounded-lg transition-all duration-300 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
                                         <ChildProfileCard child={child} />
