@@ -24,6 +24,7 @@ import LegalPage from "./pages/LegalPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import { useEffect } from "react";
 import { usePostHog } from "posthog-js/react";
+import SettingsPage from "./pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
               <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
               <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
