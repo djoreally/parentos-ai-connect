@@ -419,7 +419,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_child_parent: {
+        Args: { child_id_to_check: string }
+        Returns: boolean
+      }
     }
     Enums: {
       author_role: "Parent" | "Teacher" | "Doctor"
