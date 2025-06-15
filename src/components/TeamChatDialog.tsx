@@ -42,13 +42,44 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: (content: string) => sendMessage(childId, content),
+    mutationFn: async (content: string) => {
+      // Optimistically add the message to the UI
+      const tempMessage: Message = {
+        id: `temp-${Date.now()}`,
+        content,
+        child_id: childId,
+        user_id: user?.id || '',
+        created_at: new Date().toISOString(),
+        profiles: {
+          first_name: user?.user_metadata?.first_name || 'You',
+          last_name: user?.user_metadata?.last_name || '',
+        }
+      };
+
+      queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
+        return oldData ? [...oldData, tempMessage] : [tempMessage];
+      });
+
+      try {
+        const result = await sendMessage(childId, content);
+        
+        // Replace the temp message with the real one
+        queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
+          if (!oldData) return [result];
+          return oldData.map(msg => msg.id === tempMessage.id ? result : msg);
+        });
+        
+        return result;
+      } catch (error) {
+        // Remove the temp message on error
+        queryClient.setQueryData(['messages', childId], (oldData: Message[] | undefined) => {
+          return oldData ? oldData.filter(msg => msg.id !== tempMessage.id) : [];
+        });
+        throw error;
+      }
+    },
     onSuccess: () => {
       setNewMessage('');
-      toast({
-        title: "Message sent",
-        description: "Your message has been sent successfully.",
-      });
     },
     onError: (error) => {
       console.error("Failed to send message:", error);
@@ -78,6 +109,11 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
         },
         async (payload) => {
           console.log('New message received via realtime:', payload);
+          
+          // Skip if this is our own message (already handled optimistically)
+          if (payload.new.user_id === user?.id) {
+            return;
+          }
           
           try {
             // Fetch the profile data for the new message
@@ -126,7 +162,7 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [childId, queryClient, isOpen]);
+  }, [childId, queryClient, isOpen, user?.id]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
