@@ -17,14 +17,26 @@ import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { LogOut, Settings } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function UserNav() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/login')
+    setIsLoggingOut(true);
+    const { error } = await supabase.auth.signOut();
+    setIsLoggingOut(false);
+
+    if (error) {
+      toast.error("Logout failed, please try again.");
+      return;
+    }
+
+    toast.success("Logged out!");
+    navigate('/login');
   }
 
   const getInitials = () => {
@@ -41,7 +53,7 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full" disabled={isLoggingOut}>
           <Avatar className="h-8 w-8">
             {/* We will add AvatarImage later when profile pictures are supported */}
             <AvatarFallback>{getInitials()}</AvatarFallback>
@@ -69,9 +81,13 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem 
+          onClick={handleLogout} 
+          disabled={isLoggingOut}
+          className={isLoggingOut ? "opacity-50 pointer-events-none" : ""}
+        >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+          <span>{isLoggingOut ? "Logging out..." : "Log out"}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
