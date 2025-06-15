@@ -19,8 +19,10 @@ const RegisterPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('RegisterPage: Starting registration process...');
     
     if (password !== confirmPassword) {
+      console.log('RegisterPage: Password mismatch');
       toast({
         title: "Error",
         description: "Passwords do not match.",
@@ -30,8 +32,11 @@ const RegisterPage = () => {
     }
 
     setIsLoading(true);
+    console.log('RegisterPage: Set loading to true, attempting signup...');
     
     try {
+      console.log('RegisterPage: Calling supabase.auth.signUp with email:', email);
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -40,7 +45,15 @@ const RegisterPage = () => {
         }
       });
 
+      console.log('RegisterPage: Signup response:', { 
+        hasData: !!data, 
+        hasUser: !!data?.user,
+        userConfirmed: data?.user?.email_confirmed_at,
+        error: error?.message 
+      });
+
       if (error) {
+        console.error('RegisterPage: Signup error:', error);
         toast({
           title: "Sign up failed",
           description: error.message,
@@ -51,6 +64,8 @@ const RegisterPage = () => {
 
       // If signup successful, create profile with default role
       if (data.user) {
+        console.log('RegisterPage: User created, attempting to create profile...');
+        
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -59,11 +74,14 @@ const RegisterPage = () => {
           });
 
         if (profileError) {
-          console.error('Error creating profile:', profileError);
+          console.error('RegisterPage: Profile creation error:', profileError);
           // Don't show error to user since auth was successful
+        } else {
+          console.log('RegisterPage: Profile created successfully');
         }
       }
 
+      console.log('RegisterPage: Showing success toast and navigating...');
       toast({
         title: "Success!",
         description: "Account created. Please check your email to confirm your account.",
@@ -71,13 +89,14 @@ const RegisterPage = () => {
       
       navigate('/login');
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('RegisterPage: Unexpected error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
+      console.log('RegisterPage: Setting loading to false');
       setIsLoading(false);
     }
   };

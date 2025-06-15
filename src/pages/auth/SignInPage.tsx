@@ -1,4 +1,3 @@
-
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -25,15 +24,26 @@ const SignInPage = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('SignIn: Starting sign in process...');
     setIsLoading(true);
     
     try {
+      console.log('SignIn: Attempting to sign in with email:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('SignIn: Response received:', { 
+        hasData: !!data, 
+        hasSession: !!data?.session, 
+        hasUser: !!data?.user,
+        error: error?.message 
+      });
+
       if (error) {
+        console.error('SignIn: Error occurred:', error);
         await logAuditEvent('USER_LOGIN_FAIL', { 
           details: { email, error: error.message }, 
           target_entity: 'user' 
@@ -47,10 +57,12 @@ const SignInPage = () => {
       }
 
       if (!data.session) {
+        console.log('SignIn: No session, checking for MFA...');
         // MFA is required
         const { data: factorsData, error: mfaError } = await supabase.auth.mfa.listFactors();
 
         if (mfaError) {
+          console.error('SignIn: MFA error:', mfaError);
           toast({
             title: "Could not retrieve MFA factors",
             description: mfaError.message,
@@ -61,6 +73,7 @@ const SignInPage = () => {
 
         const totpFactor = factorsData.totp[0];
         if (!totpFactor) {
+          console.log('SignIn: No TOTP factor found');
           await logAuditEvent('USER_LOGIN_FAIL', { 
             details: { email, error: "User has no TOTP factor enrolled but MFA is required." }, 
             target_entity: 'user' 
@@ -80,6 +93,7 @@ const SignInPage = () => {
           description: "Please enter your authenticator code.",
         });
       } else {
+        console.log('SignIn: Successful login with session');
         await logAuditEvent('USER_LOGIN_SUCCESS', { 
           details: { email }, 
           target_entity: 'user', 
@@ -93,13 +107,14 @@ const SignInPage = () => {
         // Don't navigate here - let the auth context handle it
       }
     } catch (error) {
-      console.error('Unexpected sign in error:', error);
+      console.error('SignIn: Unexpected error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
+      console.log('SignIn: Setting loading to false');
       setIsLoading(false);
     }
   };
