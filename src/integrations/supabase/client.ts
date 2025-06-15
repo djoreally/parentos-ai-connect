@@ -9,9 +9,6 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-console.log('Supabase URL:', SUPABASE_URL);
-console.log('Supabase Key (first 20 chars):', SUPABASE_PUBLISHABLE_KEY.substring(0, 20) + '...');
-
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
@@ -19,11 +16,4 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
     detectSessionInUrl: true
   }
-});
-
-// Test connection
-supabase.auth.getSession().then(({ data, error }) => {
-  console.log('Initial session check:', { data: data.session ? 'session exists' : 'no session', error });
-}).catch(err => {
-  console.error('Error getting initial session:', err);
 });

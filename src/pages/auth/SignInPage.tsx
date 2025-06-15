@@ -1,3 +1,4 @@
+
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -5,174 +6,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
-import { logAuditEvent } from '@/api/audit';
+import toast from 'react-hot-toast';
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [mfaRequired, setMfaRequired] = useState(false);
-  const [factorId, setFactorId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('SignIn: Starting sign in process...');
-    setIsLoading(true);
     
-    try {
-      console.log('SignIn: Attempting to sign in with email:', email);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      console.log('SignIn: Response received:', { 
-        hasData: !!data, 
-        hasSession: !!data?.session, 
-        hasUser: !!data?.user,
-        error: error?.message 
-      });
-
-      if (error) {
-        console.error('SignIn: Error occurred:', error);
-        await logAuditEvent('USER_LOGIN_FAIL', { 
-          details: { email, error: error.message }, 
-          target_entity: 'user' 
-        });
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!data.session) {
-        console.log('SignIn: No session, checking for MFA...');
-        // MFA is required
-        const { data: factorsData, error: mfaError } = await supabase.auth.mfa.listFactors();
-
-        if (mfaError) {
-          console.error('SignIn: MFA error:', mfaError);
-          toast({
-            title: "Could not retrieve MFA factors",
-            description: mfaError.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const totpFactor = factorsData.totp[0];
-        if (!totpFactor) {
-          console.log('SignIn: No TOTP factor found');
-          await logAuditEvent('USER_LOGIN_FAIL', { 
-            details: { email, error: "User has no TOTP factor enrolled but MFA is required." }, 
-            target_entity: 'user' 
-          });
-          toast({
-            title: "MFA Required, but no authenticator app is set up.",
-            description: "Please contact support if you've lost access.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        setFactorId(totpFactor.id);
-        setMfaRequired(true);
-        toast({
-          title: "Two-Factor Authentication Required",
-          description: "Please enter your authenticator code.",
-        });
-      } else {
-        console.log('SignIn: Successful login with session');
-        await logAuditEvent('USER_LOGIN_SUCCESS', { 
-          details: { email }, 
-          target_entity: 'user', 
-          target_id: data.session.user.id 
-        });
-        queryClient.invalidateQueries({ queryKey: ['profile'] });
-        toast({
-          title: "Welcome back!",
-          description: "You have been successfully signed in.",
-        });
-        // Don't navigate here - let the auth context handle it
-      }
-    } catch (error) {
-      console.error('SignIn: Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      console.log('SignIn: Setting loading to false');
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    if (!factorId) {
-      toast({
-        title: "An error occurred",
-        description: "MFA factor ID is missing. Please try signing in again.",
-        variant: "destructive",
-      });
-      setMfaRequired(false);
-      setIsLoading(false);
+    if (!email || !password) {
+      toast.error('Please fill in all fields');
       return;
     }
 
+    setIsLoading(true);
+    
     try {
-      const { error } = await supabase.auth.mfa.challengeAndVerify({
-        factorId,
-        code: otp,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
       });
-      
+
       if (error) {
-        await logAuditEvent('USER_MFA_VERIFICATION_FAIL', { 
-          details: { email, error: error.message }, 
-          target_entity: 'user' 
-        });
-        toast({
-          title: "Verification Failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        console.error('Sign in error:', error);
+        toast.error(error.message);
         return;
       }
 
-      await logAuditEvent('USER_MFA_VERIFICATION_SUCCESS', { 
-        details: { email }, 
-        target_entity: 'user' 
-      });
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully signed in.",
-      });
-      setOtp('');
-      setMfaRequired(false);
-      setFactorId(null);
-      // Don't navigate here - let the auth context handle it
-    } catch (error) {
-      console.error('Unexpected MFA error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+      if (data.user) {
+        toast.success('Welcome back!');
+        queryClient.invalidateQueries({ queryKey: ['profile'] });
+        // Navigation will be handled by AuthContext
+      }
+    } catch (error: any) {
+      console.error('Unexpected sign in error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -180,81 +54,48 @@ const SignInPage = () => {
 
   return (
     <AuthLayout
-      title={mfaRequired ? "Two-Factor Challenge" : "Welcome back"}
-      description={mfaRequired ? `Enter the code from your authenticator app for ${email}` : "Enter your email below to log in to your account"}
+      title="Welcome back"
+      description="Enter your email below to log in to your account"
     >
       <Card>
-        {mfaRequired ? (
-          <form onSubmit={handleVerifyOtp}>
-            <CardContent className="pt-6">
-              <Label htmlFor="otp">One-Time Password</Label>
-              <div className="flex justify-center pt-2">
-                <InputOTP 
-                  id="otp"
-                  maxLength={6} 
-                  value={otp} 
-                  onChange={(value) => setOtp(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                  </InputOTPGroup>
-                  <InputOTPSeparator />
-                  <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading || otp.length < 6}>
-                {isLoading ? 'Verifying...' : 'Verify & Sign In'}
-              </Button>
-            </CardFooter>
-          </form>
-        ) : (
-          <form onSubmit={handleSignIn}>
-            <CardContent className="space-y-4 pt-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="m@example.com" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </Button>
-              <div className="text-center text-sm">
-                Don't have an account?{' '}
-                <Link to="/register" className="underline">
-                  Sign up
-                </Link>
-              </div>
-            </CardFooter>
-          </form>
-        )}
+        <form onSubmit={handleSignIn}>
+          <CardContent className="space-y-4 pt-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="m@example.com" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </Button>
+            <div className="text-center text-sm">
+              Don't have an account?{' '}
+              <Link to="/register" className="underline">
+                Sign up
+              </Link>
+            </div>
+          </CardFooter>
+        </form>
       </Card>
     </AuthLayout>
   );

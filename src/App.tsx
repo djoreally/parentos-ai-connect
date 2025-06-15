@@ -27,6 +27,7 @@ import { usePostHog } from "posthog-js/react";
 import SettingsPage from "./pages/SettingsPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 import AppointmentsPage from "./pages/AppointmentsPage";
+import toast, { Toaster as HotToaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,17 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <HotToaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'hsl(var(--background))',
+                  color: 'hsl(var(--foreground))',
+                  border: '1px solid hsl(var(--border))',
+                },
+              }}
+            />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<LandingPage />} />

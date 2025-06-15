@@ -6,12 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -19,52 +18,42 @@ const RegisterPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('RegisterPage: Starting registration process...');
+    
+    if (!email || !password || !confirmPassword) {
+      toast.error('Please fill in all fields');
+      return;
+    }
     
     if (password !== confirmPassword) {
-      console.log('RegisterPage: Password mismatch');
-      toast({
-        title: "Error",
-        description: "Passwords do not match.",
-        variant: "destructive",
-      });
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
     setIsLoading(true);
-    console.log('RegisterPage: Set loading to true, attempting signup...');
     
     try {
-      console.log('RegisterPage: Calling supabase.auth.signUp with email:', email);
-      
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
         }
       });
 
-      console.log('RegisterPage: Signup response:', { 
-        hasData: !!data, 
-        hasUser: !!data?.user,
-        userConfirmed: data?.user?.email_confirmed_at,
-        error: error?.message 
-      });
-
       if (error) {
-        console.error('RegisterPage: Signup error:', error);
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        console.error('Sign up error:', error);
+        toast.error(error.message);
         return;
       }
 
       // If signup successful, create profile with default role
       if (data.user) {
-        console.log('RegisterPage: User created, attempting to create profile...');
+        console.log('User created successfully');
         
         const { error: profileError } = await supabase
           .from('profiles')
@@ -74,29 +63,17 @@ const RegisterPage = () => {
           });
 
         if (profileError) {
-          console.error('RegisterPage: Profile creation error:', profileError);
+          console.error('Profile creation error:', profileError);
           // Don't show error to user since auth was successful
-        } else {
-          console.log('RegisterPage: Profile created successfully');
         }
       }
 
-      console.log('RegisterPage: Showing success toast and navigating...');
-      toast({
-        title: "Success!",
-        description: "Account created. Please check your email to confirm your account.",
-      });
-      
+      toast.success('Account created! Please check your email to confirm your account.');
       navigate('/login');
-    } catch (error) {
-      console.error('RegisterPage: Unexpected error:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      console.error('Unexpected sign up error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
     } finally {
-      console.log('RegisterPage: Setting loading to false');
       setIsLoading(false);
     }
   };
