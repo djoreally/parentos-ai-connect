@@ -11,6 +11,8 @@ type AuthContextType = {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  isAuthenticated: boolean;
+  hasProfile: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +20,8 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   session: null,
   loading: true,
+  isAuthenticated: false,
+  hasProfile: false,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -27,26 +31,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
 
-  const fetchOrCreateProfile = async (userId: string): Promise<Profile | null> => {
+  const createProfileForUser = async (userId: string): Promise<Profile | null> => {
     try {
-      // Try to get existing profile
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (fetchError) {
-        console.error("Profile fetch error:", fetchError);
-        return null;
-      }
-      
-      if (existingProfile) {
-        return existingProfile as Profile;
-      }
-      
-      // Create profile if it doesn't exist
-      const { data: newProfile, error: createError } = await supabase
+      const { data: newProfile, error } = await supabase
         .from('profiles')
         .insert({ 
           id: userId,
@@ -57,29 +44,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .select()
         .single();
         
-      if (createError) {
-        console.error("Error creating profile:", createError);
+      if (error) {
+        console.error("Error creating profile:", error);
         return null;
       }
       
       return newProfile as Profile;
     } catch (err) {
-      console.error("Profile fetch/create exception:", err);
+      console.error("Profile creation exception:", err);
+      return null;
+    }
+  };
+
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    try {
+      const { data: existingProfile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Profile fetch error:", error);
+        return null;
+      }
+      
+      if (existingProfile) {
+        return existingProfile as Profile;
+      }
+      
+      // No profile exists, create one
+      return await createProfileForUser(userId);
+    } catch (err) {
+      console.error("Profile fetch exception:", err);
       return null;
     }
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (!mounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          const userProfile = await fetchOrCreateProfile(session.user.id);
-          setProfile(userProfile);
-
           // Handle Google token storage
           if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
             try {
@@ -89,35 +104,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               console.error("Failed to upsert user token", error);
             }
           }
+
+          // Fetch or create profile
+          const userProfile = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(userProfile);
+          }
         } else {
           setProfile(null);
         }
         
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
-    // Check for existing session
-    const getInitialSession = async () => {
+    // Get initial session
+    const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (session?.user) {
+        if (error) {
+          console.error("Error getting session:", error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (session?.user && mounted) {
           setSession(session);
           setUser(session.user);
-          const userProfile = await fetchOrCreateProfile(session.user.id);
-          setProfile(userProfile);
+          
+          const userProfile = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(userProfile);
+          }
         }
       } catch (error) {
-        console.error("Error getting initial session:", error);
+        console.error("Error initializing auth:", error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
     
-    getInitialSession();
+    initializeAuth();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [queryClient]);
@@ -127,6 +164,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     profile,
     session,
     loading,
+    isAuthenticated: !!user,
+    hasProfile: !!profile?.role,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

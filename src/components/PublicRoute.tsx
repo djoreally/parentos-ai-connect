@@ -17,28 +17,20 @@ const FullPageLoader = () => (
 );
 
 const PublicRoute = ({ children }: { children: JSX.Element }) => {
-  const { user, profile, loading } = useAuth();
+  const { isAuthenticated, hasProfile, loading } = useAuth();
 
   // Show loading while checking auth state
   if (loading) {
     return <FullPageLoader />;
   }
 
-  // If user is authenticated, redirect to appropriate dashboard
-  if (user && profile) {
-    if (profile.role === 'Admin') {
-      return <Navigate to="/compliance" replace />;
-    }
-    if (profile.role === 'Parent') {
-      return <Navigate to="/dashboard" replace />;
-    }
-    if (profile.role === 'Teacher' || profile.role === 'Doctor') {
-      return <Navigate to="/team-dashboard" replace />;
-    }
+  // If user is authenticated and has a profile with role, redirect to dashboard
+  if (isAuthenticated && hasProfile) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // If user exists but no profile/role, send to role selection
-  if (user && !profile?.role) {
+  // If user is authenticated but no role selected, redirect to role selection
+  if (isAuthenticated && !hasProfile) {
     return <Navigate to="/select-role" replace />;
   }
 

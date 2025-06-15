@@ -17,7 +17,7 @@ const FullPageLoader = () => (
 );
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const { user, profile, loading } = useAuth();
+  const { isAuthenticated, hasProfile, profile, loading } = useAuth();
   const location = useLocation();
 
   // Show loading while checking auth state
@@ -25,25 +25,25 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return <FullPageLoader />;
   }
 
-  // If not authenticated, redirect to login
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // If not authenticated, redirect to register page
+  if (!isAuthenticated) {
+    return <Navigate to="/register" state={{ from: location }} replace />;
   }
 
   // If authenticated but no role selected, redirect to role selection
-  if (!profile?.role && location.pathname !== '/select-role') {
+  if (!hasProfile && location.pathname !== '/select-role') {
     return <Navigate to="/select-role" replace />;
   }
 
   // If has role but on role selection page, redirect to appropriate dashboard
-  if (profile?.role && location.pathname === '/select-role') {
-    if (profile.role === 'Admin') {
+  if (hasProfile && location.pathname === '/select-role') {
+    if (profile?.role === 'Admin') {
       return <Navigate to="/compliance" replace />;
     }
-    if (profile.role === 'Parent') {
+    if (profile?.role === 'Parent') {
       return <Navigate to="/dashboard" replace />;
     }
-    if (profile.role === 'Teacher' || profile.role === 'Doctor') {
+    if (profile?.role === 'Teacher' || profile?.role === 'Doctor') {
       return <Navigate to="/team-dashboard" replace />;
     }
   }
