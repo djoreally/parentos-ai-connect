@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
-import { LogEntry, Child, AppNotification, Profile } from '@/types';
+import { LogEntry, Child, AppNotification } from '@/types';
 import NewLogForm from '@/components/NewLogForm';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
@@ -13,6 +12,9 @@ import AiInsights from '@/components/AiInsights';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import QuickActions from '@/components/dashboard/QuickActions';
 import Timeline from '@/components/dashboard/Timeline';
+import { Button } from '@/components/ui/button';
+import { MilestoneTracker } from '@/components/milestones/MilestoneTracker';
+import { Rocket } from 'lucide-react';
 
 const LOGS_PER_PAGE = 5;
 
@@ -26,6 +28,7 @@ const Dashboard = () => {
   const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
+  const [showMilestoneTracker, setShowMilestoneTracker] = useState(false);
   
   useEffect(() => {
     if (children && children.length > 0 && !selectedChildId) {
@@ -40,7 +43,7 @@ const Dashboard = () => {
   const { data: logsData, isLoading: isLoadingLogs, isError } = useQuery<{logs: LogEntry[], count: number}>({
     queryKey: ['logs', selectedChildId, currentPage],
     queryFn: () => getLogs(selectedChildId!, currentPage),
-    enabled: !!selectedChildId,
+    enabled: !!selectedChildId && !showMilestoneTracker,
   });
 
   const logs = logsData?.logs;
@@ -93,6 +96,17 @@ const Dashboard = () => {
 
   const selectedChild = children?.find(child => child.id === selectedChildId);
 
+  if (showMilestoneTracker && selectedChild) {
+    return (
+        <div className="min-h-screen bg-background">
+            <Header />
+            <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
+                <MilestoneTracker selectedChild={selectedChild} onBack={() => setShowMilestoneTracker(false)} />
+            </main>
+        </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -103,17 +117,28 @@ const Dashboard = () => {
             children={children}
             selectedChild={selectedChild}
             selectedChildId={selectedChildId}
-            onSelectChild={setSelectedChildId}
+            onSelectChild={(id) => {
+              setShowMilestoneTracker(false);
+              setSelectedChildId(id);
+            }}
             isLoadingChildren={isLoadingChildren}
           />
-
-          <QuickActions
-            selectedChild={selectedChild}
-            profile={profile}
-            onNotificationClick={handleNotificationClick}
-            isChatModalOpen={isChatModalOpen}
-            onChatModalOpenChange={setIsChatModalOpen}
-          />
+          
+          <div className="flex items-center justify-between">
+            <QuickActions
+              selectedChild={selectedChild}
+              profile={profile}
+              onNotificationClick={handleNotificationClick}
+              isChatModalOpen={isChatModalOpen}
+              onChatModalOpenChange={setIsChatModalOpen}
+            />
+             {selectedChild && (
+                <Button onClick={() => setShowMilestoneTracker(true)}>
+                  <Rocket className="mr-2 h-4 w-4" />
+                  Track Milestones
+                </Button>
+            )}
+          </div>
 
           <div className="grid gap-12 md:grid-cols-3">
             <Timeline 

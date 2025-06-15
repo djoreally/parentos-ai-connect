@@ -82,6 +82,54 @@ export type Database = {
           },
         ]
       }
+      child_milestone_status: {
+        Row: {
+          child_id: string
+          evidence_url: string | null
+          id: string
+          milestone_id: string
+          notes: string | null
+          status: Database["public"]["Enums"]["milestone_status"]
+          updated_at: string
+          updated_by_user_id: string
+        }
+        Insert: {
+          child_id: string
+          evidence_url?: string | null
+          id?: string
+          milestone_id: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"]
+          updated_at?: string
+          updated_by_user_id: string
+        }
+        Update: {
+          child_id?: string
+          evidence_url?: string | null
+          id?: string
+          milestone_id?: string
+          notes?: string | null
+          status?: Database["public"]["Enums"]["milestone_status"]
+          updated_at?: string
+          updated_by_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_milestone_status_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "child_milestone_status_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       children: {
         Row: {
           ai_summary: string | null
@@ -257,6 +305,33 @@ export type Database = {
           },
         ]
       }
+      milestones: {
+        Row: {
+          age_group: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          age_group: string
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          age_group?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           child_id: string
@@ -350,6 +425,7 @@ export type Database = {
       author_role: "Parent" | "Teacher" | "Doctor"
       invitation_status: "pending" | "accepted" | "expired" | "revoked"
       log_type: "text" | "voice" | "document"
+      milestone_status: "not_yet" | "in_progress" | "achieved"
       notification_type: "new_log" | "team_invite" | "alert" | "new_message"
       user_role: "Parent" | "Teacher" | "Doctor" | "Admin"
     }
@@ -470,6 +546,7 @@ export const Constants = {
       author_role: ["Parent", "Teacher", "Doctor"],
       invitation_status: ["pending", "accepted", "expired", "revoked"],
       log_type: ["text", "voice", "document"],
+      milestone_status: ["not_yet", "in_progress", "achieved"],
       notification_type: ["new_log", "team_invite", "alert", "new_message"],
       user_role: ["Parent", "Teacher", "Doctor", "Admin"],
     },

@@ -59,3 +59,29 @@ export type Message = {
     last_name: string | null;
   } | null;
 };
+
+export type MilestoneStatus = 'not_yet' | 'in_progress' | 'achieved';
+
+export type Milestone = {
+  id: string;
+  category: string;
+  age_group: string;
+  description: string;
+  source: string | null;
+  created_at: string;
+};
+
+export type ChildMilestoneStatus = {
+  id: string;
+  child_id: string;
+  milestone_id: string;
+  status: MilestoneStatus;
+  notes: string | null;
+  evidence_url: string | null;
+  updated_by_user_id: string;
+  updated_at: string;
+};
+
+export type ChildMilestoneStatusWithMilestone = ChildMilestoneStatus & {
+  milestones: Milestone;
+};
