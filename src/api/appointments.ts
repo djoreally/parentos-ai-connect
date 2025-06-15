@@ -16,9 +16,9 @@ export const getAppointmentsForChild = async (childId: string): Promise<Appointm
     .from('appointments')
     .select(`
       *,
-      participants:appointment_participants (
+      participants:appointment_participants!inner (
         *,
-        profile:profiles (id, first_name, last_name)
+        profile:profiles!inner (id, first_name, last_name)
       )
     `)
     .eq('child_id', childId)
@@ -30,14 +30,14 @@ export const getAppointmentsForChild = async (childId: string): Promise<Appointm
   }
 
   // The type from select is a bit complex, we cast it here after checking structure.
-  return data as AppointmentWithParticipants[];
+  return data as unknown as AppointmentWithParticipants[];
 };
 
 export const getCareTeamForChild = async (childId: string): Promise<CareTeamMember[]> => {
     const { data, error } = await supabase
         .from('child_access')
         .select(`
-            profiles (id, first_name, last_name, role)
+            profiles:profiles!inner(id, first_name, last_name, role)
         `)
         .eq('child_id', childId);
 

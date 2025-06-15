@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,13 +17,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createAppointment, getCareTeamForChild, CareTeamMember } from '@/api/appointments';
 import { useToast } from '@/components/ui/use-toast';
 import { format } from 'date-fns';
-import { CalendarIcon, Plus, UserPlus } from 'lucide-react';
+import { CalendarIcon, Plus, UserPlus, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -54,7 +52,6 @@ const appointmentSchema = z.object({
     message: "End time must be after start time",
     path: ["endTime"],
 });
-
 
 interface CreateAppointmentDialogProps {
   childId: string;
@@ -155,7 +152,6 @@ const CreateAppointmentDialog = ({ childId }: CreateAppointmentDialogProps) => {
                 </FormItem>
               )}
             />
-            {/* ... More fields ... */}
             <FormField
               control={form.control}
               name="date"
@@ -266,7 +262,7 @@ const CreateAppointmentDialog = ({ childId }: CreateAppointmentDialogProps) => {
                                                 field.onChange(newIds);
                                             }}
                                         >
-                                            <CheckIcon
+                                            <Check
                                                 className={cn(
                                                 "mr-2 h-4 w-4",
                                                 (field.value || []).includes(member.id) ? "opacity-100" : "opacity-0"
@@ -297,4 +293,3 @@ const CreateAppointmentDialog = ({ childId }: CreateAppointmentDialogProps) => {
 };
 
 export default CreateAppointmentDialog;
-
