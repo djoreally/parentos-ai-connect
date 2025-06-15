@@ -5,20 +5,24 @@ import { logAuditEvent } from './audit';
 
 const LOGS_PER_PAGE = 5;
 
-// This function simulates fetching logs from an API.
-export const getLogs = async (childId: string, page: number = 1): Promise<{logs: LogEntry[], count: number}> => {
-  console.log(`Fetching logs from Supabase for child: ${childId}, page: ${page}`);
+// This function can now fetch paginated logs or all logs for a child.
+export const getLogs = async (childId: string, page: number = 1, fetchAll: boolean = false): Promise<{logs: LogEntry[], count: number}> => {
+  console.log(`Fetching logs from Supabase for child: ${childId}, page: ${page}, fetchAll: ${fetchAll}`);
   if (!childId) return { logs: [], count: 0 };
   
-  const from = (page - 1) * LOGS_PER_PAGE;
-  const to = from + LOGS_PER_PAGE - 1;
-
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('logs')
     .select('*', { count: 'exact' })
     .eq('child_id', childId)
-    .order('timestamp', { ascending: false })
-    .range(from, to);
+    .order('timestamp', { ascending: false });
+
+  if (!fetchAll) {
+    const from = (page - 1) * LOGS_PER_PAGE;
+    const to = from + LOGS_PER_PAGE - 1;
+    query = query.range(from, to);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('Error fetching logs:', error);

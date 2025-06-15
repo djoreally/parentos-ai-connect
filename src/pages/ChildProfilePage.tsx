@@ -38,11 +38,13 @@ const ChildProfilePage = () => {
     }
   }, [childId, user]);
 
-  const { data: logs, isLoading: isLoadingLogs, isError } = useQuery({
-    queryKey: ['logs', childId],
-    queryFn: () => getLogs(childId!),
+  const { data: logsData, isLoading: isLoadingLogs, isError } = useQuery({
+    queryKey: ['logs', childId, 'all'],
+    queryFn: () => getLogs(childId!, 1, true),
     enabled: !!childId,
   });
+
+  const logs = logsData?.logs;
 
   const generateDigestMutation = useMutation({
     mutationFn: ({ childId, startDate, endDate }: { childId: string; startDate: Date; endDate: Date; }) => 
