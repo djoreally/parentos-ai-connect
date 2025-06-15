@@ -3,17 +3,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
-import { toast } from 'sonner';
-
-type AuthContextType = {
-  user: User | null;
-  profile: Profile | null;
-  session: Session | null;
-  loading: boolean;
-  error: string | null;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-};
+import { AuthContextType, AuthState } from '@/types/auth';
+import { useProfileManager } from '@/hooks/useProfileManager';
+import { signOutUser, getInitialSession } from '@/utils/authSession';
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -26,88 +18,38 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    profile: null,
+    session: null,
+    loading: true,
+    error: null,
+    initialLoadComplete: false,
+  });
 
-  const fetchOrCreateProfile = async (userId: string): Promise<Profile | null> => {
-    try {
-      setError(null);
-      
-      // First try to get existing profile
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+  const { fetchOrCreateProfile, profileError, setProfileError } = useProfileManager();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching profile:', fetchError);
-        setError(`Failed to fetch profile: ${fetchError.message}`);
-        return null;
-      }
-
-      if (existingProfile) {
-        return existingProfile as Profile;
-      }
-
-      // Create new profile if it doesn't exist
-      const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .insert({
-          id: userId,
-          first_name: null,
-          last_name: null,
-          role: null
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Error creating profile:', createError);
-        setError(`Failed to create profile: ${createError.message}`);
-        return null;
-      }
-
-      return newProfile as Profile;
-    } catch (error: any) {
-      console.error('Profile operation error:', error);
-      setError(`Profile error: ${error.message}`);
-      return null;
-    }
+  const updateAuthState = (updates: Partial<AuthState>) => {
+    setAuthState(prev => ({ ...prev, ...updates }));
   };
 
   const refreshProfile = async () => {
-    if (!session?.user) return;
+    if (!authState.session?.user) return;
     
     try {
-      setError(null);
-      const userProfile = await fetchOrCreateProfile(session.user.id);
-      setProfile(userProfile);
+      setProfileError(null);
+      const userProfile = await fetchOrCreateProfile(authState.session.user.id);
+      updateAuthState({ profile: userProfile });
     } catch (error: any) {
       console.error('Error refreshing profile:', error);
-      setError(`Failed to refresh profile: ${error.message}`);
+      updateAuthState({ error: `Failed to refresh profile: ${error.message}` });
     }
   };
 
   const signOut = async () => {
-    try {
-      setError(null);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-        setError(`Sign out failed: ${error.message}`);
-        toast.error('Failed to sign out. Please try again.');
-      } else {
-        toast.success('Signed out successfully');
-      }
-    } catch (error: any) {
-      console.error('Unexpected error during sign out:', error);
-      setError(`Unexpected error: ${error.message}`);
-      toast.error('An unexpected error occurred during sign out');
+    const error = await signOutUser();
+    if (error) {
+      updateAuthState({ error });
     }
   };
 
@@ -115,38 +57,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let mounted = true;
 
     // Get initial session
-    const getInitialSession = async () => {
-      try {
-        setError(null);
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          setError(`Session error: ${error.message}`);
-          if (mounted) {
-            setLoading(false);
-            setInitialLoadComplete(true);
-          }
-          return;
-        }
-
-        if (session && mounted) {
-          setSession(session);
-          setUser(session.user);
-          
-          const userProfile = await fetchOrCreateProfile(session.user.id);
-          if (mounted) {
-            setProfile(userProfile);
-          }
-        }
-      } catch (error: any) {
-        console.error('Session initialization error:', error);
-        setError(`Initialization error: ${error.message}`);
-      } finally {
+    const initializeAuth = async () => {
+      const { session, error } = await getInitialSession();
+      
+      if (error) {
         if (mounted) {
-          setLoading(false);
-          setInitialLoadComplete(true);
+          updateAuthState({ 
+            error, 
+            loading: false, 
+            initialLoadComplete: true 
+          });
         }
+        return;
+      }
+
+      if (session && mounted) {
+        updateAuthState({ 
+          session, 
+          user: session.user 
+        });
+        
+        const userProfile = await fetchOrCreateProfile(session.user.id);
+        if (mounted) {
+          updateAuthState({ 
+            profile: userProfile,
+            loading: false,
+            initialLoadComplete: true
+          });
+        }
+      } else if (mounted) {
+        updateAuthState({ 
+          loading: false, 
+          initialLoadComplete: true 
+        });
       }
     };
 
@@ -158,60 +101,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!mounted) return;
 
         try {
-          setError(null);
-          
           // Only show loading for subsequent auth changes after initial load
-          if (initialLoadComplete) {
-            setLoading(true);
+          if (authState.initialLoadComplete) {
+            updateAuthState({ loading: true, error: null });
           }
 
-          setSession(session);
-          setUser(session?.user ?? null);
+          updateAuthState({ 
+            session, 
+            user: session?.user ?? null 
+          });
 
           if (session?.user) {
             const userProfile = await fetchOrCreateProfile(session.user.id);
             if (mounted) {
-              setProfile(userProfile);
+              updateAuthState({ profile: userProfile });
             }
           } else {
-            setProfile(null);
+            updateAuthState({ profile: null });
           }
         } catch (error: any) {
           console.error('Auth state change error:', error);
-          setError(`Auth error: ${error.message}`);
+          updateAuthState({ error: `Auth error: ${error.message}` });
         } finally {
           if (mounted) {
-            setLoading(false);
+            updateAuthState({ loading: false });
           }
         }
       }
     );
 
-    getInitialSession();
+    initializeAuth();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [initialLoadComplete]);
+  }, [authState.initialLoadComplete]);
+
+  // Update error state when profile error changes
+  useEffect(() => {
+    if (profileError) {
+      updateAuthState({ error: profileError });
+    }
+  }, [profileError]);
 
   // Clear error after some time
   useEffect(() => {
-    if (error) {
+    if (authState.error) {
       const timer = setTimeout(() => {
-        setError(null);
+        updateAuthState({ error: null });
       }, 10000); // Clear error after 10 seconds
 
       return () => clearTimeout(timer);
     }
-  }, [error]);
+  }, [authState.error]);
 
-  const value = {
-    user,
-    profile,
-    session,
-    loading,
-    error,
+  const value: AuthContextType = {
+    user: authState.user,
+    profile: authState.profile,
+    session: authState.session,
+    loading: authState.loading,
+    error: authState.error,
     signOut,
     refreshProfile,
   };
