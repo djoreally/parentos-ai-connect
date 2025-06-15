@@ -27,8 +27,8 @@ const QuickActions = ({ selectedChild, profile, onNotificationClick, isChatModal
     const selectedChildId = selectedChild?.id;
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
+        <div className="w-full">
+            <div className="flex flex-col items-start gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
                 <NotificationBell onNotificationClick={onNotificationClick} />
             </div>

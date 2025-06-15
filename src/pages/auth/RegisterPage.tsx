@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import toast from 'react-hot-toast';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,63 +19,48 @@ const RegisterPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password || !confirmPassword) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-    
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast({
+        title: "Error",
+        description: "Passwords do not match.",
+        variant: "destructive",
+      });
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    // Enforce strong password policy
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: "Weak Password",
+        description: "Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsLoading(true);
-    
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        }
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+      }
+    });
+    setIsLoading(false);
+
+    if (error) {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive",
       });
-
-      if (error) {
-        console.error('Sign up error:', error);
-        toast.error(error.message);
-        return;
-      }
-
-      // If signup successful, create profile with default role
-      if (data.user) {
-        console.log('User created successfully');
-        
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            role: 'Parent'
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          // Don't show error to user since auth was successful
-        }
-      }
-
-      toast.success('Account created! Please check your email to confirm your account.');
+    } else {
+      toast({
+        title: "Success!",
+        description: "Account created. Please check your email to confirm your account.",
+      });
       navigate('/login');
-    } catch (error: any) {
-      console.error('Unexpected sign up error:', error);
-      toast.error('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 

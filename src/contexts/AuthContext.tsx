@@ -28,60 +28,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    let mounted = true;
-
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Error getting session:', error);
-          if (mounted) {
-            setLoading(false);
-          }
-          return;
-        }
-
-        if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            // Fetch profile
-            const { data: userProfile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            setProfile(userProfile as Profile);
-          }
-          
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error);
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    getInitialSession();
-
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
-
-        console.log('Auth state changed:', event, session?.user?.email);
-        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch profile
+          // fetch profile
           const { data: userProfile } = await supabase
             .from('profiles')
             .select('*')
@@ -92,6 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
              try {
                 await upsertUserToken(session);
+                // Invalidate query to refetch connection status
                 queryClient.invalidateQueries({ queryKey: ['googleToken'] });
              } catch (error) {
                 console.error("Failed to upsert user token", error);
@@ -100,13 +54,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setProfile(null);
         }
-        
         setLoading(false);
       }
     );
+
+    const checkInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(userProfile as Profile);
+      }
+      setLoading(false);
+    };
+    checkInitialSession();
     
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, [queryClient]);
