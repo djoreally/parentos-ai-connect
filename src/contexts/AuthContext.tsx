@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,27 +27,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
 
+  const fetchUserProfile = async (userId: string) => {
+    console.log("[AuthContext] Fetching profile for user:", userId);
+    try {
+      const { data: userProfile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (error) {
+        console.error("[AuthContext] Profile fetch error:", error);
+        return null;
+      }
+      
+      console.log("[AuthContext] Profile fetch result:", userProfile);
+      return userProfile as Profile;
+    } catch (err) {
+      console.error("[AuthContext] Profile fetch exception:", err);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    console.log("[AuthContext] useEffect entered"); // DEBUG
+    console.log("[AuthContext] useEffect entered");
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("[AuthContext] onAuthStateChange:", event, session); // DEBUG
+        console.log("[AuthContext] onAuthStateChange:", event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          // fetch profile
-          const { data: userProfile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          if (error) {
-            console.log("[AuthContext] profile fetch error:", error);
-          }
-          console.log("[AuthContext] profile loaded:", userProfile); // DEBUG
-          setProfile(userProfile as Profile || null);
+          const userProfile = await fetchUserProfile(session.user.id);
+          setProfile(userProfile);
 
           if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
             try {
@@ -59,31 +73,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } else {
           setProfile(null);
         }
-        console.log("[AuthContext] setLoading(false) from onAuthStateChange"); // DEBUG
+        console.log("[AuthContext] setLoading(false) from onAuthStateChange");
         setLoading(false);
       }
     );
 
     const checkInitialSession = async () => {
-      console.log("[AuthContext] checkInitialSession called"); // DEBUG
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const { data: userProfile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        if (error) {
-          console.log("[AuthContext] profile fetch error (initial):", error);
+      console.log("[AuthContext] checkInitialSession called");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("[AuthContext] Initial session:", session?.user?.id);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          const userProfile = await fetchUserProfile(session.user.id);
+          setProfile(userProfile);
         }
-        console.log("[AuthContext] profile loaded (initial):", userProfile); // DEBUG
-        setProfile(userProfile as Profile || null);
+      } catch (error) {
+        console.error("[AuthContext] Error checking initial session:", error);
       }
-      console.log("[AuthContext] setLoading(false) from checkInitialSession"); // DEBUG
+      
+      console.log("[AuthContext] setLoading(false) from checkInitialSession");
       setLoading(false);
     };
+    
     checkInitialSession();
 
     return () => {
@@ -98,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
   };
 
-  console.log("[AuthContext] Rendering provider, loading:", loading, "user:", user, "profile:", profile); // DEBUG
+  console.log("[AuthContext] Rendering provider, loading:", loading, "user:", user?.id, "profile:", profile?.id);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
