@@ -23,21 +23,11 @@ const ChildProfilePage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Log when the page mounts, what the childId is
-  console.log("[ChildProfilePage] mounted. childId:", childId);
-
   const { data: child, isLoading: isLoadingChild } = useQuery({
     queryKey: ['child', childId],
-    queryFn: () => {
-      console.log("[ChildProfilePage] fetching child profile for", childId);
-      return getChildById(childId!);
-    },
+    queryFn: () => getChildById(childId!),
     enabled: !!childId,
-    // No additional options
   });
-
-  // Log state from useQuery after evaluation
-  console.log("[ChildProfilePage] child:", child, "| isLoadingChild:", isLoadingChild);
 
   useEffect(() => {
     if (childId && user) {
@@ -53,9 +43,6 @@ const ChildProfilePage = () => {
     queryFn: () => getLogs(childId!, 1, true),
     enabled: !!childId,
   });
-
-  // Log other state for diagnosis
-  console.log("[ChildProfilePage] logsData:", logsData, "| isLoadingLogs:", isLoadingLogs, "| isError:", isError);
 
   const logs = logsData?.logs;
 
