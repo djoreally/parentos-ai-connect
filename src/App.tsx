@@ -15,20 +15,41 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "next-themes";
 import TeamDashboardPage from "./pages/TeamDashboardPage";
 import AddChildPage from "./pages/AddChildPage";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import AdminRoute from "./components/AdminRoute";
 import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 import LegalPage from "./pages/LegalPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import { useEffect } from "react";
+import { usePostHog } from "posthog-js/react";
 
 const queryClient = new QueryClient();
+
+const PostHogUserTracker = () => {
+  const { user, profile } = useAuth();
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    if (user && profile && posthog) {
+      posthog.identify(user.id, {
+        email: user.email,
+        name: profile.full_name,
+      });
+    } else if (!user && posthog) {
+        posthog.reset();
+    }
+  }, [user, profile, posthog]);
+
+  return null;
+};
 
 const App = () => (
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <PostHogUserTracker />
         <TooltipProvider>
           <Toaster />
           <Sonner />
