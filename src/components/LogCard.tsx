@@ -1,3 +1,4 @@
+
 import { LogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +28,7 @@ const LogCard = ({ log }: LogCardProps) => {
 
   return (
     <Card className="overflow-hidden animate-fade-in">
-      <CardHeader className="flex flex-row items-start bg-muted/50 justify-between space-y-0 pb-3">
+      <CardHeader className="flex flex-col sm:flex-row items-start bg-muted/50 sm:justify-between space-y-3 sm:space-y-0 pb-3">
         <div className="space-y-1.5">
           <CardTitle className="text-lg" dangerouslySetInnerHTML={{ __html: log.original_entry.title }} />
           <div className="flex items-center text-sm text-muted-foreground space-x-2 flex-wrap">
@@ -40,7 +41,7 @@ const LogCard = ({ log }: LogCardProps) => {
             <span>{timeAgo}</span>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 justify-end">
+        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
           {log.tags && log.tags.map(tag => (
             <Badge key={tag} variant="secondary" className="capitalize">{tag}</Badge>
           ))}
