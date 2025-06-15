@@ -35,7 +35,7 @@ const LandingPage = () => {
     {
       name: 'Sarah Miller',
       role: 'Parent',
-      quote: "ParentOS has transformed how we support our child. The unified timeline makes it easy to stay informed and collaborate with teachers and doctors.",
+      quote: "Parentrak has transformed how we support our child. The unified timeline makes it easy to stay informed and collaborate with teachers and doctors.",
       image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&auto=format&fit=crop',
     },
     {
@@ -47,7 +47,7 @@ const LandingPage = () => {
     {
       name: 'Emily Rodriguez',
       role: 'Parent',
-      quote: "ParentOS has been a game-changer for our family. It's brought everyone together and ensured we're all on the same page about our child's needs.",
+      quote: "Parentrak has been a game-changer for our family. It's brought everyone together and ensured we're all on the same page about our child's needs.",
       image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop',
     },
   ];
@@ -82,7 +82,7 @@ const LandingPage = () => {
                   Connect Caregivers, Support Your Child's Growth
                 </h1>
                 <h2 className="text-muted-foreground text-sm @[480px]:text-base font-normal leading-normal">
-                  ParentOS integrates insights from parents, teachers, and doctors into a single timeline, ensuring comprehensive support for your child's well-being.
+                  Parentrak integrates insights from parents, teachers, and doctors into a single timeline, ensuring comprehensive support for your child's well-being.
                 </h2>
               </div>
               <Button asChild className="h-10 px-4 @[480px]:h-12 @[480px]:px-5 text-sm @[480px]:text-base font-bold leading-normal tracking-[0.015em]">
@@ -91,25 +91,25 @@ const LandingPage = () => {
             </div>
           </section>
 
-          {/* Why ParentOS Section */}
+          {/* Why Parentrak Section */}
           <section id="about" className="text-center">
-            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Why ParentOS?</h2>
+            <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Why Parentrak?</h2>
             <p className="text-foreground text-base font-normal leading-normal pb-3 pt-1 px-4">
-              ParentOS bridges the communication gap between caregivers, providing a unified view of your child's development. Track progress, identify needs, and collaborate effectively to ensure your child thrives.
+              Parentrak bridges the communication gap between caregivers, providing a unified view of your child's development. Track progress, identify needs, and collaborate effectively to ensure your child thrives.
             </p>
           </section>
 
           {/* Visuals Section */}
           <section className="px-4 py-10">
             <div className="flex flex-col items-center gap-4 text-center">
-              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">See ParentOS in Action</h2>
+              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">See Parentrak in Action</h2>
               <p className="text-foreground text-base font-normal leading-normal max-w-[720px]">
                 Explore how our intuitive interface brings all your child's information together in one place.
               </p>
               <div className="mt-8 w-full max-w-4xl">
                 <img 
                   src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?q=80&w=1470&auto=format&fit=crop" 
-                  alt="ParentOS dashboard screenshot" 
+                  alt="Parentrak dashboard screenshot" 
                   className="rounded-lg shadow-lg border border-border"
                 />
               </div>
@@ -120,16 +120,16 @@ const LandingPage = () => {
           <section className="px-4 py-10 text-center">
             <div className="flex justify-center items-center gap-2">
               <Youtube className="h-6 w-6 text-primary" />
-              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">Watch How ParentOS Works</h2>
+              <h2 className="text-foreground text-[22px] font-bold leading-tight tracking-[-0.015em]">Watch How Parentrak Works</h2>
             </div>
             <p className="text-foreground text-base font-normal leading-normal my-4 max-w-[720px] mx-auto">
-              Discover how ParentOS can simplify communication and collaboration for your child's care team in this short video.
+              Discover how Parentrak can simplify communication and collaboration for your child's care team in this short video.
             </p>
             <div className="aspect-video max-w-4xl mx-auto bg-muted rounded-lg">
               <iframe 
                 className="w-full h-full rounded-lg shadow-lg border border-border"
                 src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                title="ParentOS Explainer Video" 
+                title="Parentrak Explainer Video" 
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen>
@@ -144,7 +144,7 @@ const LandingPage = () => {
                 Key Features
               </h1>
               <p className="text-foreground text-base font-normal leading-normal max-w-[720px]">
-                ParentOS offers a range of features designed to streamline communication and support your child's growth.
+                Parentrak offers a range of features designed to streamline communication and support your child's growth.
               </p>
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3">
@@ -198,7 +198,7 @@ const LandingPage = () => {
           <section id="pricing" className="text-center px-4 py-10 @[480px]:px-10 @[480px]:py-20">
             <div className="flex flex-col gap-2 text-center max-w-[720px] mx-auto">
               <h1 className="text-foreground tracking-light text-[32px] font-bold leading-tight @[480px]:text-4xl @[480px]:font-black @[480px]:leading-tight @[480px]:tracking-[-0.033em]">
-                Get Started with ParentOS Today
+                Get Started with Parentrak Today
               </h1>
               <p className="text-foreground text-base font-normal leading-normal mb-8">
                 Sign up for free to start building a comprehensive timeline for your child. Upgrade to unlock powerful collaborative features and AI insights.

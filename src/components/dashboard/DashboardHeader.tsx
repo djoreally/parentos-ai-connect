@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +43,7 @@ const DashboardHeader = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to ParentOS</CardTitle>
+        <CardTitle>Welcome to Parentrak</CardTitle>
         <CardDescription>Please add a child profile to get started.</CardDescription>
       </CardHeader>
       <CardContent>

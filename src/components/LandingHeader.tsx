@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BrainCircuit } from 'lucide-react';
@@ -21,7 +20,7 @@ const LandingHeader = () => {
             fill="currentColor"
           ></path>
         </svg>
-        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">ParentOS</h2>
+        <h2 className="text-lg font-bold leading-tight tracking-[-0.015em]">Parentrak</h2>
       </Link>
       <div className="hidden md:flex flex-1 justify-end items-center">
         <nav className="flex items-center gap-9 mr-8">

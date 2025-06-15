@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ShieldCheck, ShieldX, MessageSquareQuote } from 'lucide-react';
@@ -30,7 +29,7 @@ const PrivacyPage = () => {
                     <strong>Secure Storage:</strong> All data you provide is stored in our secure Supabase database, which employs robust security measures. We manage access controls strictly to ensure only authorized users can view information.
                   </li>
                   <li>
-                    <strong>Prototype Status:</strong> Currently, ParentOS is a prototype. We operate exclusively with test data and strongly advise against using real Protected Health Information (PHI) at this stage.
+                    <strong>Prototype Status:</strong> Currently, Parentrak is a prototype. We operate exclusively with test data and strongly advise against using real Protected Health Information (PHI) at this stage.
                   </li>
                 </ul>
               </CardContent>

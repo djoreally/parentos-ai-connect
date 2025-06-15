@@ -21,8 +21,8 @@ serve(async (req) => {
       <div style="font-family: sans-serif; line-height: 1.6;">
         <h2>You're Invited!</h2>
         <p>Hello,</p>
-        <p><strong>${parent_name}</strong> has invited you to join their team on ParentOS as a <strong>${role.toLowerCase()}</strong> for <strong>${child_name}</strong>'s profile.</p>
-        <p>ParentOS is a platform that helps parents and professionals collaborate to support a child's development.</p>
+        <p><strong>${parent_name}</strong> has invited you to join their team on Parentrak as a <strong>${role.toLowerCase()}</strong> for <strong>${child_name}</strong>'s profile.</p>
+        <p>Parentrak is a platform that helps parents and professionals collaborate to support a child's development.</p>
         <p>To accept the invitation and set up your account, please click the link below:</p>
         <p style="margin: 20px 0;">
           <a 
@@ -35,7 +35,7 @@ serve(async (req) => {
         <p>This invitation link will expire in 7 days.</p>
         <p>If you were not expecting this invitation, you can safely ignore this email.</p>
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-        <p style="font-size: 0.8em; color: #777;">The ParentOS Team</p>
+        <p style="font-size: 0.8em; color: #777;">The Parentrak Team</p>
       </div>
     `;
 

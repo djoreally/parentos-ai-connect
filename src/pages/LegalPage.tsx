@@ -11,7 +11,7 @@ const LegalPage = () => {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-foreground mb-4">Legal Information</h1>
           <p className="text-lg text-muted-foreground mb-8">
-            Important terms and conditions for using ParentOS.
+            Important terms and conditions for using Parentrak.
           </p>
 
           <div className="space-y-8">
@@ -22,7 +22,7 @@ const LegalPage = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  By using ParentOS, you agree to our terms and conditions. These terms govern your access to and use of our services. It's important to read them carefully. The service is provided "as is" without warranties of any kind. We are not responsible for any decisions made based on the information provided by our AI models. This platform is a tool to assist caregivers, not a replacement for professional medical, educational, or legal advice.
+                  By using Parentrak, you agree to our terms and conditions. These terms govern your access to and use of our services. It's important to read them carefully. The service is provided "as is" without warranties of any kind. We are not responsible for any decisions made based on the information provided by our AI models. This platform is a tool to assist caregivers, not a replacement for professional medical, educational, or legal advice.
                 </p>
               </CardContent>
             </Card>
@@ -34,7 +34,7 @@ const LegalPage = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  ParentOS is an informational tool and is not intended to provide medical, legal, or educational advice. The AI-generated insights are based on patterns in the data provided and should not be considered as diagnoses or professional recommendations. Always consult with a qualified professional for any health, developmental, or legal concerns regarding your child.
+                  Parentrak is an informational tool and is not intended to provide medical, legal, or educational advice. The AI-generated insights are based on patterns in the data provided and should not be considered as diagnoses or professional recommendations. Always consult with a qualified professional for any health, developmental, or legal concerns regarding your child.
                 </p>
                 <p className="text-muted-foreground mt-4">
                   All sensitive data is contained within the secure platform and is not transmitted via external channels. Generated reports (like PDF digests) are for personal use and should be handled with care.
@@ -49,7 +49,7 @@ const LegalPage = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Users are expected to use ParentOS responsibly. You agree not to upload malicious content, attempt to breach our security measures, or use the service for any illegal purposes. We reserve the right to suspend or terminate accounts that violate these policies.
+                  Users are expected to use Parentrak responsibly. You agree not to upload malicious content, attempt to breach our security measures, or use the service for any illegal purposes. We reserve the right to suspend or terminate accounts that violate these policies.
                 </p>
               </CardContent>
             </Card>

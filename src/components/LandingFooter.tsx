@@ -13,11 +13,11 @@ const LandingFooter = () => {
             <Link to="/legal" className="text-base font-normal text-muted-foreground hover:text-primary transition-colors">
               Terms of Service
             </Link>
-            <a href="mailto:contact@parentos.com" className="text-base font-normal text-muted-foreground hover:text-primary transition-colors">
+            <a href="mailto:contact@parentrak.com" className="text-base font-normal text-muted-foreground hover:text-primary transition-colors">
               Contact Us
             </a>
           </div>
-          <p className="text-base font-normal text-muted-foreground">© {new Date().getFullYear()} ParentOS. All rights reserved.</p>
+          <p className="text-base font-normal text-muted-foreground">© {new Date().getFullYear()} Parentrak. All rights reserved.</p>
         </div>
       </div>
     </footer>

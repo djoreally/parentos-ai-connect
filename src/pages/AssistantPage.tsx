@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -34,7 +33,7 @@ const AssistantPage = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: 'assistant',
-      text: childId ? "Hello! I'm your ParentOS assistant. I have this child's logs ready. How can I help you today?" : "Hello! I'm your ParentOS assistant. To get started, please go back to the dashboard and select a child.",
+      text: childId ? "Hello! I'm your Parentrak assistant. I have this child's logs ready. How can I help you today?" : "Hello! I'm your Parentrak assistant. To get started, please go back to the dashboard and select a child.",
     },
   ]);
 

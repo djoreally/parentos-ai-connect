@@ -14,7 +14,7 @@ const Header = () => {
         <Link to="/" className="flex items-center space-x-3">
           <BrainCircuit className="h-8 w-8 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold text-foreground">ParentOS</h1>
+            <h1 className="text-2xl font-bold text-foreground">Parentrak</h1>
             <p className="text-sm text-muted-foreground">One voice. All contexts. All caregivers.</p>
           </div>
         </Link>
