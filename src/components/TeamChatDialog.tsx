@@ -78,9 +78,6 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
         throw error;
       }
     },
-    onSuccess: () => {
-      setNewMessage('');
-    },
     onError: (error) => {
       console.error("Failed to send message:", error);
       toast({
@@ -185,6 +182,11 @@ export default function TeamChatDialog({ childId, childName, isOpen, onOpenChang
     }
 
     console.log('Sending message:', trimmedMessage);
+    
+    // Clear the input immediately
+    setNewMessage('');
+    
+    // Send the message
     sendMessageMutation.mutate(trimmedMessage);
   };
   
