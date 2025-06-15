@@ -33,12 +33,15 @@ const PostHogUserTracker = () => {
 
   useEffect(() => {
     if (user && profile && posthog) {
+      const fullName = `${profile.first_name || ""} ${
+        profile.last_name || ""
+      }`.trim();
       posthog.identify(user.id, {
         email: user.email,
-        name: profile.full_name,
+        name: fullName,
       });
     } else if (!user && posthog) {
-        posthog.reset();
+      posthog.reset();
     }
   }, [user, profile, posthog]);
 
