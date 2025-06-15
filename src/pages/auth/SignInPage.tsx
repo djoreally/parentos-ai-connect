@@ -1,3 +1,4 @@
+
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -158,6 +159,9 @@ const SignInPage = () => {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
+              <p className="pt-4 text-center text-sm text-muted-foreground">
+                Enter the 6-digit code from your authenticator app. It expires and regenerates every 30 seconds.
+              </p>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isLoading || otp.length < 6}>
