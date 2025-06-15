@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,7 @@ import { useEffect } from "react";
 import { usePostHog } from "posthog-js/react";
 import SettingsPage from "./pages/SettingsPage";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AppointmentsPage from "./pages/AppointmentsPage";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +76,7 @@ const App = () => (
                 <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
                 <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
                 <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
                 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

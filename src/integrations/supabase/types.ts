@@ -9,6 +9,91 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointment_participants: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["participant_status"]
+          user_id: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["participant_status"]
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["participant_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_participants_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointments: {
+        Row: {
+          child_id: string
+          created_at: string
+          description: string | null
+          end_time: string
+          google_meet_link: string | null
+          id: string
+          location: string | null
+          meeting_type: Database["public"]["Enums"]["meeting_type"]
+          organizer_user_id: string
+          start_time: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          title: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          description?: string | null
+          end_time: string
+          google_meet_link?: string | null
+          id?: string
+          location?: string | null
+          meeting_type: Database["public"]["Enums"]["meeting_type"]
+          organizer_user_id: string
+          start_time: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          title: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          google_meet_link?: string | null
+          id?: string
+          location?: string | null
+          meeting_type?: Database["public"]["Enums"]["meeting_type"]
+          organizer_user_id?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -425,11 +510,14 @@ export type Database = {
       }
     }
     Enums: {
+      appointment_status: "scheduled" | "cancelled" | "completed"
       author_role: "Parent" | "Teacher" | "Doctor"
       invitation_status: "pending" | "accepted" | "expired" | "revoked"
       log_type: "text" | "voice" | "document"
+      meeting_type: "online" | "in-person"
       milestone_status: "not_yet" | "in_progress" | "achieved"
       notification_type: "new_log" | "team_invite" | "alert" | "new_message"
+      participant_status: "pending" | "accepted" | "declined" | "tentative"
       user_role: "Parent" | "Teacher" | "Doctor" | "Admin"
     }
     CompositeTypes: {
@@ -546,11 +634,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      appointment_status: ["scheduled", "cancelled", "completed"],
       author_role: ["Parent", "Teacher", "Doctor"],
       invitation_status: ["pending", "accepted", "expired", "revoked"],
       log_type: ["text", "voice", "document"],
+      meeting_type: ["online", "in-person"],
       milestone_status: ["not_yet", "in_progress", "achieved"],
       notification_type: ["new_log", "team_invite", "alert", "new_message"],
+      participant_status: ["pending", "accepted", "declined", "tentative"],
       user_role: ["Parent", "Teacher", "Doctor", "Admin"],
     },
   },
