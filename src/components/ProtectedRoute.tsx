@@ -8,6 +8,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
+  // Show loading spinner during auth state transitions
   if (loading) {
     return <AuthLoadingSpinner />;
   }

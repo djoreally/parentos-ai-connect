@@ -1,3 +1,4 @@
+
 import AuthLayout from './AuthLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateProfile } from '@/api/profiles';
 import { Profile } from '@/types';
+import AuthLoadingSpinner from '@/components/AuthLoadingSpinner';
 
 const RoleSelectionPage = () => {
   const navigate = useNavigate();
@@ -28,11 +30,14 @@ const RoleSelectionPage = () => {
         description: `You are now set up as a ${data.role}. Redirecting...`,
       });
 
-      if (data.role === 'Parent') {
-        navigate('/dashboard');
-      } else {
-        navigate('/team-dashboard');
-      }
+      // Small delay to show the success message before redirect
+      setTimeout(() => {
+        if (data.role === 'Parent') {
+          navigate('/dashboard');
+        } else {
+          navigate('/team-dashboard');
+        }
+      }, 1000);
     },
     onError: (error) => {
       toast({
@@ -46,6 +51,11 @@ const RoleSelectionPage = () => {
   const handleRoleSelect = (roleName: 'Parent' | 'Teacher' | 'Doctor') => {
     mutate({ role: roleName });
   };
+
+  // Show loading spinner during role update to prevent flashing
+  if (isPending) {
+    return <AuthLoadingSpinner />;
+  }
 
   return (
     <AuthLayout
@@ -68,7 +78,6 @@ const RoleSelectionPage = () => {
           ))}
         </CardContent>
       </Card>
-      {isPending && <p className="text-center text-muted-foreground mt-4">Saving your role...</p>}
     </AuthLayout>
   );
 };

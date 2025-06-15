@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const fetchOrCreateProfile = async (userId: string): Promise<Profile | null> => {
     try {
@@ -84,6 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error('Error getting session:', error);
           if (mounted) {
             setLoading(false);
+            setInitialLoadComplete(true);
           }
           return;
         }
@@ -102,6 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } finally {
         if (mounted) {
           setLoading(false);
+          setInitialLoadComplete(true);
         }
       }
     };
@@ -112,6 +115,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('Auth event:', event, session?.user?.email);
         
         if (!mounted) return;
+
+        // Only show loading for subsequent auth changes after initial load
+        if (initialLoadComplete) {
+          setLoading(true);
+        }
 
         setSession(session);
         setUser(session?.user ?? null);
@@ -137,7 +145,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [initialLoadComplete]);
 
   const value = {
     user,

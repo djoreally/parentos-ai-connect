@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { logAuditEvent } from '@/api/audit';
 import SignInForm from './SignInForm';
 import MfaForm from './MfaForm';
+import AuthLoadingSpinner from '@/components/AuthLoadingSpinner';
 
 const SignInPage = () => {
   const { toast } = useToast();
@@ -17,11 +18,13 @@ const SignInPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const queryClient = useQueryClient();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setIsSigningIn(true);
     
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -30,6 +33,7 @@ const SignInPage = () => {
 
     if (error) {
       setIsLoading(false);
+      setIsSigningIn(false);
       await logAuditEvent('USER_LOGIN_FAIL', { details: { email, error: error.message }, target_entity: 'user' });
       toast({
         title: "Sign in failed",
@@ -45,6 +49,7 @@ const SignInPage = () => {
 
       if (mfaError) {
         setIsLoading(false);
+        setIsSigningIn(false);
         toast({
           title: "Could not retrieve MFA factors",
           description: mfaError.message,
@@ -56,6 +61,7 @@ const SignInPage = () => {
       const totpFactor = factorsData.totp[0];
       if (!totpFactor) {
         setIsLoading(false);
+        setIsSigningIn(false);
         await logAuditEvent('USER_LOGIN_FAIL', { details: { email, error: "User has no TOTP factor enrolled but MFA is required." }, target_entity: 'user' });
         toast({
           title: "MFA Required, but no authenticator app is set up.",
@@ -73,13 +79,13 @@ const SignInPage = () => {
         description: "Please enter your authenticator code.",
       });
     } else {
-      setIsLoading(false);
       await logAuditEvent('USER_LOGIN_SUCCESS', { details: { email }, target_entity: 'user', target_id: data.session.user.id });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       toast({
           title: "Welcome back!",
           description: "You have been successfully signed in.",
       });
+      // Don't set loading to false here - let the auth context handle the redirect
     }
   };
 
@@ -103,9 +109,8 @@ const SignInPage = () => {
       code: otp,
     });
     
-    setIsLoading(false);
-    
     if (error) {
+      setIsLoading(false);
       await logAuditEvent('USER_MFA_VERIFICATION_FAIL', { details: { email, error: error.message }, target_entity: 'user' });
       toast({
         title: "Verification Failed",
@@ -124,7 +129,13 @@ const SignInPage = () => {
     setOtp('');
     setMfaRequired(false);
     setFactorId(null);
+    // Don't set loading to false here - let the auth context handle the redirect
   };
+
+  // Show loading spinner when signing in to prevent route flashing
+  if (isSigningIn) {
+    return <AuthLoadingSpinner />;
+  }
 
   return (
     <AuthLayout

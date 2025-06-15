@@ -7,6 +7,7 @@ import AuthLoadingSpinner from '@/components/AuthLoadingSpinner';
 const PublicRoute = ({ children }: { children: JSX.Element }) => {
   const { user, profile, loading } = useAuth();
 
+  // Show loading spinner during auth state transitions
   if (loading) {
     return <AuthLoadingSpinner />;
   }
