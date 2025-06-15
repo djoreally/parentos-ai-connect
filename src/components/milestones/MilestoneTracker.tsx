@@ -8,6 +8,7 @@ import { groupBy } from 'lodash-es';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MilestoneSummary } from './MilestoneSummary';
 
 interface MilestoneTrackerProps {
   selectedChild: Child;
@@ -70,6 +71,7 @@ export function MilestoneTracker({ selectedChild, onBack }: MilestoneTrackerProp
          </div>
       ) : (
         <div className="space-y-6">
+          <MilestoneSummary milestones={milestones ?? []} statuses={statuses ?? []} />
           {Object.entries(groupedMilestones).map(([groupTitle, groupMilestones]) => (
             <MilestoneGroup
               key={groupTitle}
