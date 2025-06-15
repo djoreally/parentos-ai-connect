@@ -1,4 +1,3 @@
-
 import { LogEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,7 +29,7 @@ const LogCard = ({ log }: LogCardProps) => {
     <Card className="overflow-hidden animate-fade-in">
       <CardHeader className="flex flex-row items-start bg-muted/50 justify-between space-y-0 pb-3">
         <div className="space-y-1.5">
-          <CardTitle className="text-lg">{log.original_entry.title}</CardTitle>
+          <CardTitle className="text-lg" dangerouslySetInnerHTML={{ __html: log.original_entry.title }} />
           <div className="flex items-center text-sm text-muted-foreground space-x-2 flex-wrap">
             {authorIcons[log.author]}
             <span>Logged by {log.author}</span>
@@ -74,13 +73,13 @@ const LogCard = ({ log }: LogCardProps) => {
                 </Button>
               </div>
             )}
-            <p className="whitespace-pre-wrap">{log.original_entry.description}</p>
+            <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: log.original_entry.description }} />
           </TabsContent>
           <TabsContent value="teacher" className="p-6 text-sm bg-secondary/10">
-            <p className="whitespace-pre-wrap">{log.summary_for_teacher}</p>
+            <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: log.summary_for_teacher }} />
           </TabsContent>
           <TabsContent value="doctor" className="p-6 text-sm bg-blue-50">
-            <p className="whitespace-pre-wrap">{log.summary_for_doctor}</p>
+            <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: log.summary_for_doctor }} />
           </TabsContent>
         </Tabs>
       </CardContent>

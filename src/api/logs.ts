@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { LogEntry } from '@/types';
 import { logAuditEvent } from './audit';
+import { sanitize } from '@/lib/sanitizer';
 
 const LOGS_PER_PAGE = 5;
 
@@ -106,15 +107,19 @@ export const submitLog = async (
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("User not authenticated to submit log");
   
-  // Generate AI-powered summaries, tags and emotion score
-  const { summary_for_teacher, summary_for_doctor, tags, emotionScore } = generateAiSummaries(title, description);
+  // Sanitize user input to prevent XSS
+  const sanitizedTitle = sanitize(title);
+  const sanitizedDescription = sanitize(description);
+
+  // Generate AI-powered summaries, tags and emotion score with sanitized data
+  const { summary_for_teacher, summary_for_doctor, tags, emotionScore } = generateAiSummaries(sanitizedTitle, sanitizedDescription);
 
   const newLogPayload = {
     child_id: childId,
     user_id: user.id,
-    author: 'Parent' as const, // Corrected casing to match DB enum.
-    type: type, // Match the DB enum which is lowercase.
-    original_entry: { title, description },
+    author: 'Parent' as const, 
+    type: type,
+    original_entry: { title: sanitizedTitle, description: sanitizedDescription },
     summary_for_teacher,
     summary_for_doctor,
     tags,

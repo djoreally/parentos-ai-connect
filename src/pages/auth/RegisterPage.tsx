@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const RegisterPage = () => {
@@ -27,6 +27,18 @@ const RegisterPage = () => {
       });
       return;
     }
+
+    // Enforce strong password policy
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: "Weak Password",
+        description: "Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
