@@ -1,16 +1,13 @@
 
 import AuthLayout from './AuthLayout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
 import React, { useState } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
 import { logAuditEvent } from '@/api/audit';
+import SignInForm from './SignInForm';
+import MfaForm from './MfaForm';
 
 const SignInPage = () => {
   const { toast } = useToast();
@@ -136,78 +133,21 @@ const SignInPage = () => {
     >
       <Card>
         {mfaRequired ? (
-          <form onSubmit={handleVerifyOtp}>
-            <CardContent className="pt-6">
-              <Label htmlFor="otp">One-Time Password</Label>
-              <div className="flex justify-center pt-2">
-                <InputOTP 
-                  id="otp"
-                  maxLength={6} 
-                  value={otp} 
-                  onChange={(value) => setOtp(value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                  </InputOTPGroup>
-                  <InputOTPSeparator />
-                  <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-              <p className="pt-4 text-center text-sm text-muted-foreground">
-                Enter the 6-digit code from your authenticator app. It expires and regenerates every 30 seconds.
-              </p>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading || otp.length < 6}>
-                {isLoading ? 'Verifying...' : 'Verify & Sign In'}
-              </Button>
-            </CardFooter>
-          </form>
+          <MfaForm 
+            handleVerifyOtp={handleVerifyOtp}
+            otp={otp}
+            setOtp={setOtp}
+            isLoading={isLoading}
+          />
         ) : (
-          <form onSubmit={handleSignIn}>
-            <CardContent className="space-y-4 pt-6">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="m@example.com" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
-              </Button>
-              <div className="text-center text-sm">
-                Don't have an account?{' '}
-                <Link to="/register" className="underline">
-                  Sign up
-                </Link>
-              </div>
-            </CardFooter>
-          </form>
+          <SignInForm 
+            handleSignIn={handleSignIn}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            isLoading={isLoading}
+          />
         )}
       </Card>
     </AuthLayout>
