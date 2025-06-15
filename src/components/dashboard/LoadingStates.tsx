@@ -33,7 +33,7 @@ export const DashboardSkeleton = () => (
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 );
 
