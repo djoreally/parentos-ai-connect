@@ -36,9 +36,7 @@ export const getAppointmentsForChild = async (childId: string): Promise<Appointm
 export const getCareTeamForChild = async (childId: string): Promise<CareTeamMember[]> => {
     const { data, error } = await supabase
         .from('child_access')
-        .select(`
-            profiles:profiles!inner(id, first_name, last_name, role)
-        `)
+        .select('profiles(id, first_name, last_name, role)')
         .eq('child_id', childId);
 
     if (error) {
@@ -46,10 +44,14 @@ export const getCareTeamForChild = async (childId: string): Promise<CareTeamMemb
         throw error;
     }
     
+    if (!data) {
+        return [];
+    }
+    
     // We need to filter out null profiles and flatten the structure.
     return data
       .map(item => item.profiles)
-      .filter((p): p is CareTeamMember => p !== null);
+      .filter((p): p is CareTeamMember => p !== null && !Array.isArray(p)); // Ensure profile is a single object
 };
 
 export const createAppointment = async (

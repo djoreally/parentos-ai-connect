@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAppointmentsForChild } from '@/api/appointments';
+import { getChildren } from '@/api/children';
 import AppointmentCalendar from '@/components/appointments/AppointmentCalendar';
 import AppointmentsList from '@/components/appointments/AppointmentsList';
 import CreateAppointmentDialog from '@/components/appointments/CreateAppointmentDialog';
@@ -12,7 +13,13 @@ import { isSameDay, parseISO } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AppointmentsPage = () => {
-  const { user, children } = useAuth();
+  const { user } = useAuth();
+  const { data: children, isLoading: isLoadingChildren } = useQuery({
+    queryKey: ['children'],
+    queryFn: getChildren,
+    enabled: !!user,
+  });
+
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
@@ -22,7 +29,7 @@ const AppointmentsPage = () => {
     }
   }, [children, selectedChildId]);
 
-  const { data: appointments, isLoading } = useQuery({
+  const { data: appointments, isLoading: isLoadingAppointments } = useQuery({
     queryKey: ['appointments', selectedChildId],
     queryFn: () => getAppointmentsForChild(selectedChildId!),
     enabled: !!selectedChildId,
@@ -46,18 +53,22 @@ const AppointmentsPage = () => {
              <p className="text-muted-foreground">Schedule and manage appointments for your child's care team.</p>
            </div>
            <div className="flex items-center gap-4">
-            {children && children.length > 0 && selectedChildId ? (
-                <ChildSelector 
-                    children={children}
-                    selectedChildId={selectedChildId}
-                    onSelectChild={handleSelectChild}
-                />
-            ) : null }
+            {isLoadingChildren ? (
+              <Skeleton className="h-10 w-[280px]" />
+            ) : (
+              children && children.length > 0 && selectedChildId ? (
+                  <ChildSelector 
+                      children={children}
+                      selectedChildId={selectedChildId}
+                      onSelectChild={handleSelectChild}
+                  />
+              ) : null
+            )}
             {selectedChildId && <CreateAppointmentDialog childId={selectedChildId} />}
            </div>
         </div>
         
-        {isLoading && selectedChildId && (
+        {isLoadingAppointments && selectedChildId && (
             <div className="grid md:grid-cols-3 gap-6">
                 <Skeleton className="rounded-md border h-[360px]" />
                 <div className="md:col-span-2 space-y-4">
@@ -67,7 +78,7 @@ const AppointmentsPage = () => {
             </div>
         )}
 
-        {selectedChildId && !isLoading && (
+        {selectedChildId && !isLoadingAppointments && (
             <div className="grid md:grid-cols-3 gap-6">
                 <AppointmentCalendar 
                     appointments={appointments || []} 
@@ -80,10 +91,13 @@ const AppointmentsPage = () => {
             </div>
         )}
 
-        {!selectedChildId && !isLoading && (
+        {!selectedChildId && !isLoadingChildren && (
             <div className="flex flex-col items-center justify-center h-[calc(100vh-250px)] text-center p-8 border rounded-lg">
-                <h2 className="text-xl font-semibold">Select a child</h2>
+                <h2 className="text-xl font-semibold">Select a child to continue</h2>
                 <p className="text-muted-foreground mt-2">Please select a child from the dropdown to view and manage their appointments.</p>
+                 {children && children.length === 0 && (
+                    <p className="text-muted-foreground mt-2">You don't have any children profiles yet. Please add one from the dashboard.</p>
+                )}
             </div>
         )}
       </main>
