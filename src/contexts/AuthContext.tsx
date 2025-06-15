@@ -1,57 +1,92 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
-import { getProfile } from '@/api/profiles';
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { upsertUserToken } from '@/api/userTokens';
 
 type AuthContextType = {
-  session: Session | null;
   user: User | null;
   profile: Profile | null;
-  isLoading: boolean;
+  session: Session | null;
+  loading: boolean;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  profile: null,
+  session: null,
+  loading: true,
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // fetch profile
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          setProfile(userProfile as Profile);
+          
+          if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session.provider_token) {
+             try {
+                await upsertUserToken(session);
+                // Invalidate query to refetch connection status
+                queryClient.invalidateQueries({ queryKey: ['googleToken'] });
+             } catch (error) {
+                console.error("Failed to upsert user token", error);
+             }
+          }
+        } else {
+          setProfile(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    const checkInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
-      setIsAuthLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsAuthLoading(false);
-    });
-
+      if (session?.user) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(userProfile as Profile);
+      }
+      setLoading(false);
+    };
+    checkInitialSession();
+    
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
-
-  const { data: profile, isLoading: isProfileLoading } = useQuery({
-    queryKey: ['profile'],
-    queryFn: getProfile,
-    enabled: !!user,
-  });
+  }, [queryClient]);
 
   const value = {
-    session,
     user,
-    profile: profile ?? null,
-    isLoading: isAuthLoading || (!!user && isProfileLoading),
+    profile,
+    session,
+    loading,
   };
 
-  return <AuthContext.Provider value={value}>{!value.isLoading ? children : null}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

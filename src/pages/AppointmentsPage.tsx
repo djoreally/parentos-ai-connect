@@ -11,6 +11,7 @@ import ChildSelector from '@/components/ChildSelector';
 import { useAuth } from '@/contexts/AuthContext';
 import { isSameDay, parseISO } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import GoogleCalendarConnect from '@/components/appointments/GoogleCalendarConnect';
 
 const AppointmentsPage = () => {
   const { user } = useAuth();
@@ -64,6 +65,7 @@ const AppointmentsPage = () => {
                   />
               ) : null
             )}
+            {selectedChildId && <GoogleCalendarConnect />}
             {selectedChildId && <CreateAppointmentDialog childId={selectedChildId} />}
            </div>
         </div>

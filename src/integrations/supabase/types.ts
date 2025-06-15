@@ -47,6 +47,7 @@ export type Database = {
           created_at: string
           description: string | null
           end_time: string
+          google_event_id: string | null
           google_meet_link: string | null
           id: string
           location: string | null
@@ -61,6 +62,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_time: string
+          google_event_id?: string | null
           google_meet_link?: string | null
           id?: string
           location?: string | null
@@ -75,6 +77,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_time?: string
+          google_event_id?: string | null
           google_meet_link?: string | null
           id?: string
           location?: string | null
@@ -505,6 +508,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          provider: string
+          refresh_token: string | null
+          scopes: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          refresh_token?: string | null
+          scopes?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
