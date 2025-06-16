@@ -20,6 +20,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import AdminRoute from "./components/AdminRoute";
 import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
+import RoleManagementPage from "./pages/RoleManagementPage";
 import LegalPage from "./pages/LegalPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -110,6 +111,7 @@ const App = () => {
                   
                   {/* Admin only pages */}
                   <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
+                  <Route path="/role-management" element={<AdminRoute><RoleManagementPage /></AdminRoute>} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>

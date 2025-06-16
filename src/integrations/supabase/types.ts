@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_features: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      app_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_system_role: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system_role?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system_role?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointment_participants: {
         Row: {
           appointment_id: string
@@ -508,6 +562,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      role_feature_permissions: {
+        Row: {
+          can_access: boolean
+          created_at: string
+          feature_id: string | null
+          id: string
+          role_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          can_access?: boolean
+          created_at?: string
+          feature_id?: string | null
+          id?: string
+          role_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          can_access?: boolean
+          created_at?: string
+          feature_id?: string | null
+          id?: string
+          role_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_feature_permissions_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "app_features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_feature_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_tokens: {
         Row: {
