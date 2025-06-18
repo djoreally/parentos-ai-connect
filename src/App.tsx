@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/Landing";
 import SignInPage from "./pages/auth/SignInPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import RoleSelectionPage from "./pages/auth/RoleSelectionPage";
 import Dashboard from "./pages/Dashboard";
 import ChildProfilePage from "./pages/ChildProfilePage";
@@ -98,6 +100,8 @@ const App = () => {
                   {/* Auth pages - redirect if already authenticated */}
                   <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
                   <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                  <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
                   
                   {/* Protected pages - require authentication */}
                   <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
