@@ -101,22 +101,6 @@ export function shouldEnforceHTTPS(): boolean {
   return isProductionEnvironment() && !isSecureContext();
 }
 
-// Security headers validation
-export function validateSecurityHeaders(): void {
-  if (isProductionEnvironment()) {
-    // Check for required security headers in production
-    const requiredHeaders = [
-      'strict-transport-security',
-      'x-content-type-options',
-      'x-frame-options',
-      'x-xss-protection',
-    ];
-
-    // This would typically be checked server-side
-    console.info('Security headers should be configured server-side:', requiredHeaders);
-  }
-}
-
 // Initialize security measures
 export function initializeSecurity(): void {
   // Check secure context
@@ -127,11 +111,11 @@ export function initializeSecurity(): void {
   // Initialize CSRF token
   getCSRFToken();
 
-  // Validate security configuration
-  validateSecurityHeaders();
-
-  // Set up CSP if not handled server-side
-  if (!isProductionEnvironment()) {
-    console.info('CSP should be configured server-side:', generateCSPHeader());
-  }
+  // Note: Security headers should be configured server-side in production
+  // The following headers should be set by your web server or CDN:
+  // - Strict-Transport-Security
+  // - X-Content-Type-Options
+  // - X-Frame-Options  
+  // - X-XSS-Protection
+  // - Content-Security-Policy
 }
