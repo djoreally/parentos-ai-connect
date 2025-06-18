@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAppointmentsForChild } from '@/api/appointments';
@@ -8,7 +7,7 @@ import AppointmentsList from '@/components/appointments/AppointmentsList';
 import CreateAppointmentDialog from '@/components/appointments/CreateAppointmentDialog';
 import Header from '@/components/Header';
 import ChildSelector from '@/components/ChildSelector';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/ClerkAuthContext';
 import { isSameDay, parseISO } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import GoogleCalendarConnect from '@/components/appointments/GoogleCalendarConnect';

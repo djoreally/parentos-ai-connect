@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/contexts/AuthContext"
+import { useAuth } from "@/contexts/ClerkAuthContext"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { updateProfile, ProfileUpdate } from "@/api/profiles"
 import { useToast } from "@/components/ui/use-toast"
@@ -115,7 +115,7 @@ export function ProfileForm() {
             />
             <FormItem>
               <FormLabel>Email</FormLabel>
-              <Input value={user?.email} readOnly disabled />
+              <Input value={user?.emailAddresses?.[0]?.emailAddress || ''} readOnly disabled />
               <FormDescription>
                 You can't change your email address.
               </FormDescription>
