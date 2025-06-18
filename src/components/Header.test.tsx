@@ -3,18 +3,18 @@ import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Header from './Header';
-import * as AuthContext from '@/contexts/AuthContext';
+import * as ClerkAuthContext from '@/contexts/ClerkAuthContext';
 import { Profile } from '@/types';
 
 // Mock the useAuth hook
-jest.mock('@/contexts/AuthContext');
-const useAuthMock = AuthContext.useAuth as jest.Mock;
+jest.mock('@/contexts/ClerkAuthContext');
+const useAuthMock = ClerkAuthContext.useAuth as jest.Mock;
 
 describe('Header Component', () => {
   // Helper function to mock the auth state
   const mockAuth = (profile: Partial<Profile> | null) => {
     useAuthMock.mockReturnValue({
-      user: { id: 'user-123', email: 'test@parentrak.com' },
+      user: { id: 'user-123', emailAddresses: [{ emailAddress: 'test@parentrak.com' }] },
       profile: profile as Profile,
       loading: false,
     });

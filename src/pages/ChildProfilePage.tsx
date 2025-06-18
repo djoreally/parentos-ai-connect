@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,7 +15,7 @@ import LogHistory from '@/components/LogHistory';
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from 'react';
 import { logAuditEvent } from '@/api/audit';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/ClerkAuthContext';
 
 const ChildProfilePage = () => {
   const { childId } = useParams<{ childId: string }>();

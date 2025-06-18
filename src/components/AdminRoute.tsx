@@ -1,11 +1,11 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/ClerkAuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ReactNode } from 'react';
 import AuthLoadingSpinner from '@/components/AuthLoadingSpinner';
 
 const AdminRoute = ({ children }: { children: ReactNode }) => {
-  const { session, profile, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const location = useLocation();
 
   // Show loading spinner during auth state transitions
@@ -13,7 +13,7 @@ const AdminRoute = ({ children }: { children: ReactNode }) => {
     return <AuthLoadingSpinner />;
   }
 
-  if (!session) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

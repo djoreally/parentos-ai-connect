@@ -1,6 +1,6 @@
 
 import { BrainCircuit, ShieldCheck, CalendarDays } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/ClerkAuthContext';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { UserNav } from './UserNav';
