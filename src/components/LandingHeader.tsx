@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
@@ -36,9 +37,16 @@ const LandingHeader = () => {
             </a>
           ))}
         </nav>
-        <Button asChild>
-          <Link to="/register">Get Started</Link>
-        </Button>
+        <SignedOut>
+          <Button asChild>
+            <Link to="/register">Get Started</Link>
+          </Button>
+        </SignedOut>
+        <SignedIn>
+          <Button asChild>
+            <Link to="/dashboard">Dashboard</Link>
+          </Button>
+        </SignedIn>
       </div>
       <div className="md:hidden flex items-center">
         <Button onClick={toggleMenu} variant="ghost" size="icon">
@@ -54,9 +62,16 @@ const LandingHeader = () => {
                 {link.title}
               </a>
             ))}
-            <Button asChild>
-              <Link to="/register" onClick={toggleMenu}>Get Started</Link>
-            </Button>
+            <SignedOut>
+              <Button asChild>
+                <Link to="/register" onClick={toggleMenu}>Get Started</Link>
+              </Button>
+            </SignedOut>
+            <SignedIn>
+              <Button asChild>
+                <Link to="/dashboard" onClick={toggleMenu}>Dashboard</Link>
+              </Button>
+            </SignedIn>
           </nav>
         </div>
       )}
