@@ -4,11 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { ClerkAuthProvider } from "./contexts/ClerkAuthContext";
 import LandingPage from "./pages/Landing";
 import SignInPage from "./pages/auth/SignInPage";
 import RegisterPage from "./pages/auth/RegisterPage";
-import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import RoleSelectionPage from "./pages/auth/RoleSelectionPage";
 import Dashboard from "./pages/Dashboard";
 import ChildProfilePage from "./pages/ChildProfilePage";
@@ -17,10 +17,6 @@ import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "next-themes";
 import TeamDashboardPage from "./pages/TeamDashboardPage";
 import AddChildPage from "./pages/AddChildPage";
-import { AuthProvider } from "./contexts/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import PublicRoute from "./components/PublicRoute";
-import AdminRoute from "./components/AdminRoute";
 import ComplianceDashboardPage from "./pages/ComplianceDashboardPage";
 import RoleManagementPage from "./pages/RoleManagementPage";
 import LegalPage from "./pages/LegalPage";
@@ -84,7 +80,7 @@ const App = () => {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+        <ClerkAuthProvider>
           <ErrorBoundary>
             <TooltipProvider>
               <NetworkErrorHandler />
@@ -97,32 +93,78 @@ const App = () => {
                   <Route path="/legal" element={<LegalPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
 
-                  {/* Auth pages - redirect if already authenticated */}
-                  <Route path="/login" element={<PublicRoute><SignInPage /></PublicRoute>} />
-                  <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-                  <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  {/* Auth pages - only show when not signed in */}
+                  <Route path="/login" element={
+                    <SignedOut>
+                      <SignInPage />
+                    </SignedOut>
+                  } />
+                  <Route path="/register" element={
+                    <SignedOut>
+                      <RegisterPage />
+                    </SignedOut>
+                  } />
                   
                   {/* Protected pages - require authentication */}
-                  <Route path="/select-role" element={<ProtectedRoute><RoleSelectionPage /></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                  <Route path="/team-dashboard" element={<ProtectedRoute><TeamDashboardPage /></ProtectedRoute>} />
-                  <Route path="/child/:childId" element={<ProtectedRoute><ChildProfilePage /></ProtectedRoute>} />
-                  <Route path="/add-child" element={<ProtectedRoute><AddChildPage /></ProtectedRoute>} />
-                  <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
-                  <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                  <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
+                  <Route path="/select-role" element={
+                    <SignedIn>
+                      <RoleSelectionPage />
+                    </SignedIn>
+                  } />
+                  <Route path="/dashboard" element={
+                    <SignedIn>
+                      <Dashboard />
+                    </SignedIn>
+                  } />
+                  <Route path="/team-dashboard" element={
+                    <SignedIn>
+                      <TeamDashboardPage />
+                    </SignedIn>
+                  } />
+                  <Route path="/child/:childId" element={
+                    <SignedIn>
+                      <ChildProfilePage />
+                    </SignedIn>
+                  } />
+                  <Route path="/add-child" element={
+                    <SignedIn>
+                      <AddChildPage />
+                    </SignedIn>
+                  } />
+                  <Route path="/assistant" element={
+                    <SignedIn>
+                      <AssistantPage />
+                    </SignedIn>
+                  } />
+                  <Route path="/settings" element={
+                    <SignedIn>
+                      <SettingsPage />
+                    </SignedIn>
+                  } />
+                  <Route path="/appointments" element={
+                    <SignedIn>
+                      <AppointmentsPage />
+                    </SignedIn>
+                  } />
                   
-                  {/* Admin only pages */}
-                  <Route path="/compliance" element={<AdminRoute><ComplianceDashboardPage /></AdminRoute>} />
-                  <Route path="/role-management" element={<AdminRoute><RoleManagementPage /></AdminRoute>} />
+                  {/* Admin only pages - will need additional role checking */}
+                  <Route path="/compliance" element={
+                    <SignedIn>
+                      <ComplianceDashboardPage />
+                    </SignedIn>
+                  } />
+                  <Route path="/role-management" element={
+                    <SignedIn>
+                      <RoleManagementPage />
+                    </SignedIn>
+                  } />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
             </TooltipProvider>
           </ErrorBoundary>
-        </AuthProvider>
+        </ClerkAuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

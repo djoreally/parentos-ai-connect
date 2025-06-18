@@ -13,25 +13,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/contexts/AuthContext"
-import { supabase } from "@/integrations/supabase/client"
+import { useUser, useClerk } from "@clerk/clerk-react"
 import { LogOut, Settings } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 
 export function UserNav() {
-  const { user, profile } = useAuth()
+  const { user } = useUser()
+  const { signOut } = useClerk()
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await signOut()
     navigate('/login')
   }
 
   const getInitials = () => {
-    if (!profile) return 'U'
-    const firstNameInitial = profile.first_name?.[0] || ''
-    const lastNameInitial = profile.last_name?.[0] || ''
-    return `${firstNameInitial}${lastNameInitial}`.toUpperCase() || user?.email?.[0].toUpperCase() || 'U'
+    if (!user) return 'U'
+    const firstName = user.firstName || ''
+    const lastName = user.lastName || ''
+    return `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase() || user.emailAddresses[0]?.emailAddress[0].toUpperCase() || 'U'
   }
 
   if (!user) {
@@ -43,7 +43,6 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            {/* We will add AvatarImage later when profile pictures are supported */}
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>
@@ -52,10 +51,10 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+              {user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim()}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
+              {user.emailAddresses[0]?.emailAddress}
             </p>
           </div>
         </DropdownMenuLabel>
