@@ -1,14 +1,13 @@
-
 // Security configuration and utilities
 export const SECURITY_CONFIG = {
   // Content Security Policy
   CSP_DIRECTIVES: {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+    'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://*.clerk.accounts.dev'],
     'style-src': ["'self'", "'unsafe-inline'"],
     'img-src': ["'self'", 'data:', 'https:'],
     'font-src': ["'self'"],
-    'connect-src': ["'self'", 'https://*.supabase.co'],
+    'connect-src': ["'self'", 'https://*.supabase.co', 'https://*.clerk.accounts.dev'],
     'frame-src': ["'none'"],
     'object-src': ["'none'"],
     'base-uri': ["'self'"],
@@ -103,19 +102,32 @@ export function shouldEnforceHTTPS(): boolean {
 
 // Initialize security measures
 export function initializeSecurity(): void {
-  // Check secure context
-  if (shouldEnforceHTTPS()) {
-    console.error('Application must be served over HTTPS in production');
+  try {
+    // Check secure context
+    if (shouldEnforceHTTPS()) {
+      console.error('Application must be served over HTTPS in production');
+      throw new Error('Insecure context detected in production');
+    }
+
+    // Initialize CSRF token
+    getCSRFToken();
+
+    // Set up global error handling
+    import('./errorHandler').then(({ setupGlobalErrorHandling }) => {
+      setupGlobalErrorHandling();
+    });
+
+    console.log('✅ Security initialization completed');
+
+    // Note: Security headers should be configured server-side in production
+    // The following headers should be set by your web server or CDN:
+    // - Strict-Transport-Security
+    // - X-Content-Type-Options
+    // - X-Frame-Options  
+    // - X-XSS-Protection
+    // - Content-Security-Policy
+  } catch (error) {
+    console.error('❌ Security initialization failed:', error);
+    throw error;
   }
-
-  // Initialize CSRF token
-  getCSRFToken();
-
-  // Note: Security headers should be configured server-side in production
-  // The following headers should be set by your web server or CDN:
-  // - Strict-Transport-Security
-  // - X-Content-Type-Options
-  // - X-Frame-Options  
-  // - X-XSS-Protection
-  // - Content-Security-Policy
 }
