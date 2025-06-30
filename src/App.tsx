@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,23 +22,26 @@ import LegalPage from "./pages/LegalPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import SettingsPage from "./pages/SettingsPage";
 import ErrorBoundary from "./components/ErrorBoundary";
+import LoadingFallback from "./components/LoadingFallback";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import NetworkErrorHandler from "./components/NetworkErrorHandler";
 import { toast } from 'sonner';
 import { initializeSecurity } from './utils/security';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
-// Create query client with enhanced security and error handling
+// Create query client with enhanced error handling and retry logic
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: any) => {
         // Don't retry on authentication errors
         if (error?.message?.includes('JWT') || error?.message?.includes('auth')) {
+          console.warn('Authentication error detected, not retrying:', error.message);
           return false;
         }
         // Don't retry on 4xx errors (client errors)
         if (error?.status >= 400 && error?.status < 500) {
+          console.warn('Client error detected, not retrying:', error.status);
           return false;
         }
         // Retry up to 3 times for other errors
@@ -48,6 +50,13 @@ const queryClient = new QueryClient({
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes
+      onError: (error: any) => {
+        console.error('Query error:', error);
+        // Only show user-friendly error messages
+        if (!error?.message?.includes('JWT') && !error?.message?.includes('auth')) {
+          toast.error('Failed to load data. Please try again.');
+        }
+      },
     },
     mutations: {
       retry: (failureCount, error: any) => {
@@ -65,7 +74,9 @@ const queryClient = new QueryClient({
       onError: (error: any) => {
         console.error('Mutation error:', error);
         // Only show generic error message to prevent information leakage
-        toast.error('An error occurred. Please try again.');
+        if (!error?.message?.includes('JWT') && !error?.message?.includes('auth')) {
+          toast.error('An error occurred. Please try again.');
+        }
       },
     },
   },
@@ -73,100 +84,162 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useEffect(() => {
-    // Initialize security measures on app start
-    initializeSecurity();
+    try {
+      // Initialize security measures on app start
+      initializeSecurity();
+      
+      // Log successful app initialization
+      console.log('✅ App initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to initialize app:', error);
+      toast.error('Failed to initialize application. Please refresh the page.');
+    }
+  }, []);
+
+  // Global error handler for unhandled promise rejections
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      
+      // Prevent the default browser behavior
+      event.preventDefault();
+      
+      // Show user-friendly error message
+      toast.error('An unexpected error occurred. Please try again.');
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.error('Global error:', event.error);
+      toast.error('An unexpected error occurred. Please refresh the page.');
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
+    };
   }, []);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <ClerkAuthProvider>
-          <ErrorBoundary>
-            <TooltipProvider>
-              <NetworkErrorHandler />
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  {/* Public pages - no auth required */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/legal" element={<LegalPage />} />
-                  <Route path="/privacy" element={<PrivacyPage />} />
+    <ErrorBoundary>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <ClerkAuthProvider>
+            <ErrorBoundary fallback={<LoadingFallback message="Authentication Error" />}>
+              <TooltipProvider>
+                <NetworkErrorHandler />
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Suspense fallback={<LoadingFallback showSkeleton />}>
+                    <Routes>
+                      {/* Public pages - no auth required */}
+                      <Route path="/" element={<LandingPage />} />
+                      <Route path="/legal" element={<LegalPage />} />
+                      <Route path="/privacy" element={<PrivacyPage />} />
 
-                  {/* Auth pages - only show when not signed in */}
-                  <Route path="/login" element={
-                    <SignedOut>
-                      <SignInPage />
-                    </SignedOut>
-                  } />
-                  <Route path="/register" element={
-                    <SignedOut>
-                      <RegisterPage />
-                    </SignedOut>
-                  } />
-                  
-                  {/* Protected pages - require authentication */}
-                  <Route path="/select-role" element={
-                    <SignedIn>
-                      <RoleSelectionPage />
-                    </SignedIn>
-                  } />
-                  <Route path="/dashboard" element={
-                    <SignedIn>
-                      <Dashboard />
-                    </SignedIn>
-                  } />
-                  <Route path="/team-dashboard" element={
-                    <SignedIn>
-                      <TeamDashboardPage />
-                    </SignedIn>
-                  } />
-                  <Route path="/child/:childId" element={
-                    <SignedIn>
-                      <ChildProfilePage />
-                    </SignedIn>
-                  } />
-                  <Route path="/add-child" element={
-                    <SignedIn>
-                      <AddChildPage />
-                    </SignedIn>
-                  } />
-                  <Route path="/assistant" element={
-                    <SignedIn>
-                      <AssistantPage />
-                    </SignedIn>
-                  } />
-                  <Route path="/settings" element={
-                    <SignedIn>
-                      <SettingsPage />
-                    </SignedIn>
-                  } />
-                  <Route path="/appointments" element={
-                    <SignedIn>
-                      <AppointmentsPage />
-                    </SignedIn>
-                  } />
-                  
-                  {/* Admin only pages - will need additional role checking */}
-                  <Route path="/compliance" element={
-                    <SignedIn>
-                      <ComplianceDashboardPage />
-                    </SignedIn>
-                  } />
-                  <Route path="/role-management" element={
-                    <SignedIn>
-                      <RoleManagementPage />
-                    </SignedIn>
-                  } />
-                  
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </ErrorBoundary>
-        </ClerkAuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+                      {/* Auth pages - only show when not signed in */}
+                      <Route path="/login" element={
+                        <ErrorBoundary>
+                          <SignedOut>
+                            <SignInPage />
+                          </SignedOut>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/register" element={
+                        <ErrorBoundary>
+                          <SignedOut>
+                            <RegisterPage />
+                          </SignedOut>
+                        </ErrorBoundary>
+                      } />
+                      
+                      {/* Protected pages - require authentication */}
+                      <Route path="/select-role" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <RoleSelectionPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/dashboard" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <Dashboard />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/team-dashboard" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <TeamDashboardPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/child/:childId" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <ChildProfilePage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/add-child" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <AddChildPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/assistant" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <AssistantPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/settings" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <SettingsPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/appointments" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <AppointmentsPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      
+                      {/* Admin only pages */}
+                      <Route path="/compliance" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <ComplianceDashboardPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/role-management" element={
+                        <ErrorBoundary>
+                          <SignedIn>
+                            <RoleManagementPage />
+                          </SignedIn>
+                        </ErrorBoundary>
+                      } />
+                      
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </BrowserRouter>
+              </TooltipProvider>
+            </ErrorBoundary>
+          </ClerkAuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

@@ -1,3 +1,4 @@
+import { useAuth } from '@/contexts/ClerkAuthContext';
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { LogEntry, Child, AppNotification } from '@/types';
@@ -5,7 +6,6 @@ import NewLogForm from '@/components/NewLogForm';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLogs } from '@/api/logs';
 import { getChildren } from '@/api/children';
-import { useAuth } from '@/contexts/ClerkAuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import AiInsights from '@/components/AiInsights';
