@@ -4,7 +4,6 @@ export interface SecurityError {
   code: string;
   message: string;
   userMessage: string;
-  timestamp: string;
 }
 
 // Predefined safe error messages that don't reveal system internals
@@ -17,7 +16,6 @@ const SAFE_ERROR_MESSAGES: Record<string, string> = {
   SERVER_ERROR: 'An unexpected error occurred. Please try again.',
   NETWORK_ERROR: 'Network error. Please check your connection.',
   SESSION_EXPIRED: 'Your session has expired. Please sign in again.',
-  INITIALIZATION_ERROR: 'Failed to initialize application. Please refresh the page.',
 };
 
 export function createSecurityError(code: string, originalError?: unknown): SecurityError {
@@ -32,7 +30,6 @@ export function createSecurityError(code: string, originalError?: unknown): Secu
     code,
     message: originalError instanceof Error ? originalError.message : 'Unknown error',
     userMessage,
-    timestamp: new Date().toISOString(),
   };
 }
 
@@ -51,7 +48,7 @@ export function handleSecurityError(error: SecurityError | unknown, showToast: b
   }
 
   // Log for monitoring (without sensitive data)
-  console.warn(`Security event: ${securityError.code} at ${securityError.timestamp}`);
+  console.warn(`Security event: ${securityError.code}`);
 }
 
 // Sanitize error messages before displaying to prevent XSS
@@ -60,48 +57,87 @@ export function sanitizeErrorMessage(message: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
+    .replace(/'/g, '&#39;')
     .replace(/\//g, '&#x2F;');
 }
 
-// Enhanced error logging for debugging
-export function logError(error: unknown, context?: string) {
-  const timestamp = new Date().toISOString();
-  const errorInfo = {
-    timestamp,
-    context: context || 'unknown',
-    url: window.location.href,
-    userAgent: navigator.userAgent,
-    error: error instanceof Error ? {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    } : error,
-  };
-
-  console.error('Application Error:', errorInfo);
-
-  // In production, you might want to send this to a logging service
-  if (import.meta.env.PROD) {
-    // Example: Send to PostHog or other logging service
-    // posthog.capture('application_error', errorInfo);
+// API Error Handler with retry logic
+export class ApiErrorHandler {
+  static async handleApiError<T>(
+    apiCall: () => Promise<T>,
+    maxRetries: number = 3,
+    context: Record<string, any> = {}
+  ): Promise<T> {
+    let lastError: unknown;
+    
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await apiCall();
+      } catch (error: unknown) {
+        lastError = error;
+        
+        // Don't retry auth errors or client errors (4xx)
+        if (error instanceof Error) {
+          if (error.message.includes('JWT') || 
+              error.message.includes('auth') || 
+              error.message.includes('401') || 
+              error.message.includes('403')) {
+            console.warn('Authentication error, not retrying:', error.message);
+            throw error;
+          }
+        }
+        
+        // If we've reached max retries, throw the error
+        if (attempt === maxRetries) {
+          console.error(`Failed after ${maxRetries} attempts:`, error);
+          throw error;
+        }
+        
+        // Exponential backoff
+        const delay = Math.min(1000 * 2 ** attempt, 10000);
+        console.warn(`API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms`, error);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    // This should never happen due to the throw in the loop
+    throw lastError;
   }
 }
 
-// Global error handler setup
+// Type for error context
+export interface ErrorContext {
+  userId?: string;
+  action?: string;
+  component?: string;
+  [key: string]: any;
+}
+
+// Setup global error handlers
 export function setupGlobalErrorHandling() {
-  // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
-    logError(event.reason, 'unhandled_promise_rejection');
-    handleSecurityError(createSecurityError('SERVER_ERROR', event.reason));
-    event.preventDefault(); // Prevent the default browser behavior
+    console.error('Unhandled promise rejection:', event.reason);
+    
+    // Show a user-friendly error message
+    toast.error('An unexpected error occurred. Please try again.');
+    
+    // Prevent default browser handling
+    event.preventDefault();
   });
-
-  // Handle general JavaScript errors
+  
   window.addEventListener('error', (event) => {
-    logError(event.error, 'javascript_error');
-    handleSecurityError(createSecurityError('SERVER_ERROR', event.error));
+    console.error('Global error:', event.error);
+    
+    // Show a user-friendly error message
+    toast.error('An unexpected error occurred. Please refresh the page.');
+    
+    // Prevent default browser handling in some cases
+    if (event.error && event.error.message && 
+        (event.error.message.includes('network') || 
+         event.error.message.includes('fetch'))) {
+      event.preventDefault();
+    }
   });
-
-  console.log('✅ Global error handling initialized');
+  
+  console.log('Global error handlers initialized');
 }

@@ -4,7 +4,8 @@ import ErrorFallback from './ErrorFallback';
 
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
+  fallback?: React.ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -32,30 +33,24 @@ class ErrorBoundary extends Component<Props, State> {
       errorInfo
     });
 
-    // In production, capture the error in PostHog
+    // Call the onError prop if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
+
+    // In production, we'll capture the error in PostHog
     if (import.meta.env.PROD) {
       posthog.capture('react_error', {
         $current_url: window.location.href,
         error_message: error.message,
         error_stack: error.stack,
         component_stack: errorInfo.componentStack,
-        error_boundary: 'main',
       });
-    }
-
-    // Also log to console in development for debugging
-    if (import.meta.env.DEV) {
-      console.group('🚨 Error Boundary Caught Error');
-      console.error('Error:', error);
-      console.error('Error Info:', errorInfo);
-      console.error('Component Stack:', errorInfo.componentStack);
-      console.groupEnd();
     }
   }
   
   private handleReset = () => {
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
-    window.location.reload();
   }
 
   public render() {
@@ -68,7 +63,7 @@ class ErrorBoundary extends Component<Props, State> {
         <ErrorFallback 
           error={this.state.error} 
           errorInfo={this.state.errorInfo}
-          onReset={this.handleReset} 
+          resetError={this.handleReset} 
         />
       );
     }

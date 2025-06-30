@@ -1,15 +1,17 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
 import { createSecurityError, handleSecurityError } from '@/utils/errorHandler';
 import { nameSchema } from '@/utils/validation';
+import { toast } from 'sonner';
 
 export const useProfileManager = () => {
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchOrCreateProfile = async (userId: string): Promise<Profile | null> => {
     try {
+      setIsLoading(true);
       setError(null);
       
       // Validate userId format (should be UUID)
@@ -19,6 +21,8 @@ export const useProfileManager = () => {
         return null;
       }
       
+      console.log('Fetching profile for user:', userId);
+      
       // First try to get existing profile
       const { data: existingProfile, error: fetchError } = await supabase
         .from('profiles')
@@ -26,14 +30,21 @@ export const useProfileManager = () => {
         .eq('id', userId)
         .maybeSingle();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
         console.error('Error fetching profile:', fetchError);
-        const securityError = createSecurityError('SERVER_ERROR', fetchError);
-        setError(securityError.userMessage);
-        return null;
+        
+        // Special handling for "not found" errors
+        if (fetchError.code === 'PGRST116') {
+          console.log('Profile not found, will create a new one');
+        } else {
+          const securityError = createSecurityError('SERVER_ERROR', fetchError);
+          setError(securityError.userMessage);
+          throw fetchError;
+        }
       }
 
       if (existingProfile) {
+        console.log('Existing profile found:', existingProfile);
         // Validate existing profile data
         if (!isValidProfile(existingProfile)) {
           console.warn('Invalid profile data detected');
@@ -44,6 +55,8 @@ export const useProfileManager = () => {
         return existingProfile as Profile;
       }
 
+      console.log('Creating new profile for user:', userId);
+      
       // Create new profile if it doesn't exist
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
@@ -60,20 +73,24 @@ export const useProfileManager = () => {
         console.error('Error creating profile:', createError);
         const securityError = createSecurityError('SERVER_ERROR', createError);
         setError(securityError.userMessage);
-        return null;
+        throw createError;
       }
 
+      console.log('New profile created:', newProfile);
       return newProfile as Profile;
     } catch (error: any) {
       console.error('Profile operation error:', error);
       const securityError = createSecurityError('SERVER_ERROR', error);
       setError(securityError.userMessage);
-      return null;
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const updateProfile = async (updates: Partial<Profile>): Promise<Profile | null> => {
     try {
+      setIsLoading(true);
       setError(null);
 
       // Validate updates
@@ -113,7 +130,7 @@ export const useProfileManager = () => {
         console.error('Error updating profile:', updateError);
         const securityError = createSecurityError('SERVER_ERROR', updateError);
         setError(securityError.userMessage);
-        return null;
+        throw updateError;
       }
 
       return updatedProfile as Profile;
@@ -121,7 +138,9 @@ export const useProfileManager = () => {
       console.error('Profile update error:', error);
       const securityError = createSecurityError('SERVER_ERROR', error);
       setError(securityError.userMessage);
-      return null;
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -130,6 +149,7 @@ export const useProfileManager = () => {
     updateProfile,
     profileError: error,
     setProfileError: setError,
+    isLoading
   };
 };
 

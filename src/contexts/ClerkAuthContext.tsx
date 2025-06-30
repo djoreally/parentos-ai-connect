@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { Profile } from '@/types';
 import { useProfileManager } from '@/hooks/useProfileManager';
-import LoadingFallback from '@/components/LoadingFallback';
 import { toast } from 'sonner';
 
 interface ClerkAuthContextType {
@@ -27,6 +26,8 @@ export const ClerkAuthProvider = ({ children }: { children: React.ReactNode }) =
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchOrCreateProfile } = useProfileManager();
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
   const refreshProfile = async () => {
     if (!user) return;
@@ -38,7 +39,6 @@ export const ClerkAuthProvider = ({ children }: { children: React.ReactNode }) =
     } catch (error: any) {
       console.error('Error refreshing profile:', error);
       setError('Failed to refresh profile');
-      toast.error('Failed to load user profile. Please try refreshing the page.');
     }
   };
 
@@ -48,27 +48,40 @@ export const ClerkAuthProvider = ({ children }: { children: React.ReactNode }) =
       
       setLoading(true);
       
-      try {
-        if (user) {
+      if (user) {
+        try {
           console.log('Loading profile for user:', user.id);
           const userProfile = await fetchOrCreateProfile(user.id);
           setProfile(userProfile);
+          setError(null);
           console.log('Profile loaded successfully:', userProfile);
-        } else {
-          setProfile(null);
-          console.log('No user found, clearing profile');
+        } catch (error: any) {
+          console.error('Error loading profile:', error);
+          setError('Failed to load profile');
+          
+          // Retry logic for network errors
+          if (retryCount < MAX_RETRIES && 
+              (error.message?.includes('network') || 
+               error.message?.includes('fetch'))) {
+            const nextRetry = retryCount + 1;
+            setRetryCount(nextRetry);
+            
+            const delay = Math.min(1000 * 2 ** nextRetry, 10000);
+            console.log(`Retrying profile load (${nextRetry}/${MAX_RETRIES}) in ${delay}ms`);
+            
+            setTimeout(() => {
+              loadProfile();
+            }, delay);
+          } else if (retryCount >= MAX_RETRIES) {
+            toast.error('Failed to load user profile after multiple attempts. Please refresh the page.');
+          }
+        } finally {
+          if (retryCount === 0) {
+            setLoading(false);
+          }
         }
-      } catch (error: any) {
-        console.error('Error loading profile:', error);
-        setError('Failed to load profile');
-        
-        // Show user-friendly error message
-        if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-          toast.error('Network error. Please check your connection and try again.');
-        } else {
-          toast.error('Failed to load user profile. Please try refreshing the page.');
-        }
-      } finally {
+      } else {
+        setProfile(null);
         setLoading(false);
       }
     };
@@ -83,29 +96,6 @@ export const ClerkAuthProvider = ({ children }: { children: React.ReactNode }) =
     error,
     refreshProfile,
   };
-
-  // Show loading screen while auth is initializing
-  if (!isLoaded || (loading && !error)) {
-    return <LoadingFallback message="Initializing authentication..." />;
-  }
-
-  // Show error state if there's a critical error
-  if (error && !profile && user) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold text-destructive">Authentication Error</h2>
-          <p className="text-muted-foreground">Failed to load user profile</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <ClerkAuthContext.Provider value={value}>
