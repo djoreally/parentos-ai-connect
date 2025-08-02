@@ -1,88 +1,138 @@
 
-import { LogEntry } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, School, Stethoscope, ArrowDown, Mic, FileText } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { Calendar, User, Play, Pause, FileText, Mic } from 'lucide-react';
+import { LogEntry } from '@/types';
+import { ReactNode, useRef, useState } from 'react';
 
 interface LogCardProps {
   log: LogEntry;
 }
 
-const authorIcons: Record<LogEntry['author'], React.ReactNode> = {
-  Parent: <User className="h-5 w-5 text-gray-500" />,
-  Teacher: <School className="h-5 w-5 text-gray-500" />,
-  Doctor: <Stethoscope className="h-5 w-5 text-gray-500" />,
-};
-
-const typeIcons: Record<LogEntry['type'], React.ReactNode> = {
-  text: <ArrowDown className="h-4 w-4" />,
-  voice: <Mic className="h-4 w-4" />,
-  document: <FileText className="h-4 w-4" />,
-};
-
 const LogCard = ({ log }: LogCardProps) => {
-  const timeAgo = formatDistanceToNow(new Date(log.timestamp), { addSuffix: true });
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const typeIcons: Record<LogEntry['type'], ReactNode> = {
+    behavior: '🎭',
+    general: '📝',
+    health: '🏥',
+    milestone: '🎯',
+    academic: '📚',
+    social: '👥',
+    voice: <Mic className="h-4 w-4" />,
+    document: <FileText className="h-4 w-4" />,
+    text: '📝'
+  };
+
+  const typeColors: Record<LogEntry['type'], string> = {
+    behavior: 'bg-purple-100 text-purple-800 border-purple-200',
+    general: 'bg-gray-100 text-gray-800 border-gray-200',
+    health: 'bg-red-100 text-red-800 border-red-200',
+    milestone: 'bg-green-100 text-green-800 border-green-200',
+    academic: 'bg-blue-100 text-blue-800 border-blue-200',
+    social: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    voice: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+    document: 'bg-orange-100 text-orange-800 border-orange-200',
+    text: 'bg-gray-100 text-gray-800 border-gray-200'
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const handleAudioEnd = () => {
+    setIsPlaying(false);
+  };
 
   return (
-    <Card className="overflow-hidden animate-fade-in">
-      <CardHeader className="flex flex-col sm:flex-row items-start bg-muted/50 sm:justify-between space-y-3 sm:space-y-0 pb-3">
-        <div className="space-y-1.5">
-          <CardTitle className="text-lg" dangerouslySetInnerHTML={{ __html: log.original_entry.title }} />
-          <div className="flex items-center text-sm text-muted-foreground space-x-2 flex-wrap">
-            {authorIcons[log.author]}
-            <span>Logged by {log.author}</span>
-            <span>&bull;</span>
-            {typeIcons[log.type]}
-            <span className="capitalize">{log.type} Note</span>
-            <span>&bull;</span>
-            <span>{timeAgo}</span>
+    <Card className="mb-4">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <Badge className={`${typeColors[log.type]} flex items-center gap-1`}>
+              {typeIcons[log.type]}
+              {log.type}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              <User className="h-3 w-3 mr-1" />
+              {log.author}
+            </Badge>
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="h-4 w-4 mr-1" />
+            {formatDate(log.created_at)}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-          {log.tags && log.tags.map(tag => (
-            <Badge key={tag} variant="secondary" className="capitalize">{tag}</Badge>
-          ))}
-        </div>
+        <CardTitle className="text-lg">{log.original_entry.title}</CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <Tabs defaultValue="parent" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 rounded-none border-b">
-            <TabsTrigger value="parent"><User className="h-4 w-4 mr-2"/> Parent's View</TabsTrigger>
-            <TabsTrigger value="teacher"><School className="h-4 w-4 mr-2"/> For Teacher</TabsTrigger>
-            <TabsTrigger value="doctor"><Stethoscope className="h-4 w-4 mr-2"/> For Doctor</TabsTrigger>
-          </TabsList>
-          <TabsContent value="parent" className="p-6 text-sm">
-            {log.audio_url && log.type === 'voice' && (
-              <div className="mb-4">
-                <p className="font-semibold mb-2">Original Recording:</p>
-                <audio controls src={log.audio_url} className="w-full">
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            )}
-            {log.audio_url && log.type === 'document' && (
-              <div className="mb-4">
-                <p className="font-semibold mb-2">Attached Document:</p>
-                <Button variant="outline" asChild>
-                  <a href={log.audio_url} target="_blank" rel="noopener noreferrer">
-                    <FileText className="mr-2 h-4 w-4" />
-                    View Document
-                  </a>
-                </Button>
-              </div>
-            )}
-            <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: log.original_entry.description }} />
-          </TabsContent>
-          <TabsContent value="teacher" className="p-6 text-sm bg-secondary/10">
-            <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: log.summary_for_teacher }} />
-          </TabsContent>
-          <TabsContent value="doctor" className="p-6 text-sm bg-blue-50">
-            <p className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: log.summary_for_doctor }} />
-          </TabsContent>
-        </Tabs>
+      <CardContent>
+        <CardDescription className="text-base mb-4 whitespace-pre-wrap">
+          {log.original_entry.description}
+        </CardDescription>
+        
+        {log.type === 'voice' && log.audio_url && (
+          <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={toggleAudio}
+              className="h-8 w-8 p-0"
+            >
+              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            </Button>
+            <span className="text-sm">Voice note</span>
+            <audio
+              ref={audioRef}
+              src={log.audio_url}
+              onEnded={handleAudioEnd}
+              className="hidden"
+            />
+          </div>
+        )}
+
+        {log.type === 'document' && log.audio_url && (
+          <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+            <FileText className="h-4 w-4" />
+            <a 
+              href={log.audio_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              View Document
+            </a>
+          </div>
+        )}
+
+        {log.tags && log.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3">
+            {log.tags.map((tag, index) => (
+              <Badge key={index} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

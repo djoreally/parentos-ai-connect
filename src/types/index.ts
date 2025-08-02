@@ -25,7 +25,7 @@ export interface LogEntry {
   child_id: string;
   user_id: string;
   author: 'Parent' | 'Teacher' | 'Doctor';
-  type: 'general' | 'health' | 'behavior' | 'milestone' | 'academic' | 'social';
+  type: 'general' | 'health' | 'behavior' | 'milestone' | 'academic' | 'social' | 'voice' | 'document' | 'text';
   original_entry: {
     title: string;
     description: string;

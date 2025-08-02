@@ -10,7 +10,7 @@ const SignInPage = () => {
     >
       <div className="flex justify-center">
         <SignIn 
-          fallbackRedirectUrl="/select-role"
+          fallbackRedirectUrl="/dashboard"
           signUpUrl="/register"
         />
       </div>

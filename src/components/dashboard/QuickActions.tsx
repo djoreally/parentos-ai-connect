@@ -1,87 +1,50 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { UploadCloud, Languages, BrainCircuit, UserPlus, MessageSquare } from 'lucide-react';
-import UploadFormModal from '@/components/UploadFormModal';
-import TranslateMessageModal from '@/components/TranslateMessageModal';
-import TeamChatDialog from '@/components/TeamChatDialog';
-import InviteTeamMemberDialog from '@/components/InviteTeamMemberDialog';
-import NotificationBell from '@/components/NotificationBell';
-import { Profile, Child, AppNotification } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlusCircle, Upload, Calendar, Users, MessageCircle } from 'lucide-react';
+import { ComingSoon } from '@/components/ComingSoon';
 
 interface QuickActionsProps {
-    selectedChild: Child | undefined;
-    profile: Profile | null;
-    onNotificationClick: (notification: AppNotification) => void;
-    isChatModalOpen: boolean;
-    onChatModalOpenChange: (isOpen: boolean) => void;
+  onNewLog: () => void;
+  onUploadDocument: () => void;
+  selectedChildId?: string;
 }
 
-const QuickActions = ({ selectedChild, profile, onNotificationClick, isChatModalOpen, onChatModalOpenChange }: QuickActionsProps) => {
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
-    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-
-    const selectedChildId = selectedChild?.id;
-
-    return (
-        <div className="w-full">
-            <div className="flex flex-col items-start gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
-                <NotificationBell onNotificationClick={onNotificationClick} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
-                    <DialogTrigger asChild>
-                        <Button size="lg" variant="outline" disabled={!selectedChildId}><UploadCloud className="mr-2 h-4 w-4" /> Upload Form</Button>
-                    </DialogTrigger>
-                    <UploadFormModal onOpenChange={setIsUploadModalOpen} selectedChildId={selectedChildId} />
-                </Dialog>
-
-                <Dialog open={isTranslateModalOpen} onOpenChange={setIsTranslateModalOpen}>
-                    <DialogTrigger asChild>
-                        <Button size="lg" variant="outline"><Languages className="mr-2 h-4 w-4" /> Translate Message</Button>
-                    </DialogTrigger>
-                    <TranslateMessageModal onOpenChange={setIsTranslateModalOpen} />
-                </Dialog>
-
-                <Dialog open={isChatModalOpen} onOpenChange={onChatModalOpenChange}>
-                    <DialogTrigger asChild>
-                        <Button size="lg" variant="outline" disabled={!selectedChildId}>
-                            <MessageSquare className="mr-2 h-4 w-4" /> Team Chat
-                        </Button>
-                    </DialogTrigger>
-                    {selectedChild && (
-                        <TeamChatDialog
-                            childId={selectedChild.id}
-                            childName={selectedChild.name}
-                            isOpen={isChatModalOpen}
-                            onOpenChange={onChatModalOpenChange}
-                        />
-                    )}
-                </Dialog>
-
-                <Button asChild size="lg" variant="outline" disabled={!selectedChildId}>
-                    <Link to={selectedChildId ? `/assistant?childId=${selectedChildId}` : '/assistant'}>
-                        <BrainCircuit className="mr-2 h-4 w-4" /> AI Assistant
-                    </Link>
-                </Button>
-
-                {profile?.role === 'Parent' && (
-                    <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="lg" variant="outline" disabled={!selectedChildId}>
-                                <UserPlus className="mr-2 h-4 w-4" /> Invite Team
-                            </Button>
-                        </DialogTrigger>
-                        {selectedChildId && <InviteTeamMemberDialog onOpenChange={setIsInviteModalOpen} childId={selectedChildId} />}
-                    </Dialog>
-                )}
-            </div>
+const QuickActions = ({ onNewLog, onUploadDocument, selectedChildId }: QuickActionsProps) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-4">
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2"
+            onClick={onNewLog}
+            disabled={!selectedChildId}
+          >
+            <PlusCircle className="h-6 w-6" />
+            <span className="text-sm">New Log</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            className="h-20 flex flex-col gap-2"
+            onClick={onUploadDocument}
+            disabled={!selectedChildId}
+          >
+            <Upload className="h-6 w-6" />
+            <span className="text-sm">Upload Document</span>
+          </Button>
+          
+          <div className="col-span-2">
+            <ComingSoon feature="Team Chat & Notifications" />
+          </div>
         </div>
-    );
+      </CardContent>
+    </Card>
+  );
 };
 
 export default QuickActions;

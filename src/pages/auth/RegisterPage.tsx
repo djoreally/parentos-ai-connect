@@ -6,12 +6,12 @@ const RegisterPage = () => {
   return (
     <AuthLayout
       title="Create your account"
-      description="Sign up to get started with Parentrak"
+      description="Sign up to get started"
     >
       <div className="flex justify-center">
         <SignUp 
-          fallbackRedirectUrl="/select-role"
-          signInUrl="/login"
+          fallbackRedirectUrl="/dashboard"
+          signInUrl="/sign-in"
         />
       </div>
     </AuthLayout>

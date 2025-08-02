@@ -5,16 +5,16 @@ import { ReactNode } from 'react';
 import AuthLoadingSpinner from '@/components/AuthLoadingSpinner';
 
 const AdminRoute = ({ children }: { children: ReactNode }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, isLoading } = useAuth();
   const location = useLocation();
 
   // Show loading spinner during auth state transitions
-  if (loading) {
+  if (isLoading) {
     return <AuthLoadingSpinner />;
   }
 
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
   if (profile?.role !== 'Admin') {

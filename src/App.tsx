@@ -8,8 +8,8 @@ import Landing from '@/pages/Landing';
 import Dashboard from '@/pages/Dashboard';
 import SettingsPage from '@/pages/SettingsPage';
 import NotFound from '@/pages/NotFound';
-import { SignInPage } from '@/pages/auth/SignInPage';
-import { RegisterPage } from '@/pages/auth/RegisterPage';
+import SignInPage from '@/pages/auth/SignInPage';
+import RegisterPage from '@/pages/auth/RegisterPage';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import './App.css';
 
