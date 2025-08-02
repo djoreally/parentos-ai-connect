@@ -1,54 +1,45 @@
-export type Child = {
-  id: string; // Changed from number
-  user_id: string;
-  name: string;
-  avatar_url: string | null;
-  ai_summary: string | null;
-  dob: string;
-  allergies: string[] | null;
-  medications: string[] | null;
-  created_at: string;
-};
 
-export type LogEntry = {
-  id: string; // Changed from number
-  child_id: string;
-  user_id: string;
-  timestamp: string;
-  author: 'Parent' | 'Teacher' | 'Doctor';
-  type: 'text' | 'voice' | 'document';
-  original_entry: {
-    title: string;
-    description: string;
-  };
-  summary_for_teacher: string | null; // Can be null
-  summary_for_doctor: string | null; // Can be null
-  tags: string[] | null; // Can be null
-  emotionScore?: number | null; // Can be null
-  audio_url?: string | null;
-};
-
-export type Profile = {
+export interface Profile {
   id: string;
   first_name: string | null;
   last_name: string | null;
   role: 'Parent' | 'Teacher' | 'Doctor' | 'Admin' | null;
-  created_at: string;
-  updated_at: string;
-};
+  created_at?: string;
+  updated_at?: string;
+}
 
-export type AppNotification = {
+export interface Child {
   id: string;
   user_id: string;
-  child_id: string;
-  log_id: string | null;
-  type: 'new_log' | 'team_invite' | 'alert' | 'new_message';
-  message: string;
-  is_read: boolean;
+  name: string;
+  dob: string;
+  allergies: string[] | null;
+  medications: string[] | null;
+  avatar_url?: string;
+  ai_summary?: string;
   created_at: string;
-};
+}
 
-export type Message = {
+export interface LogEntry {
+  id: string;
+  child_id: string;
+  user_id: string;
+  author: 'Parent' | 'Teacher' | 'Doctor';
+  type: 'general' | 'health' | 'behavior' | 'milestone' | 'academic' | 'social';
+  original_entry: {
+    title: string;
+    description: string;
+  };
+  summary_for_teacher?: string;
+  summary_for_doctor?: string;
+  tags?: string[];
+  emotionScore?: number;
+  audio_url?: string;
+  timestamp: string;
+  created_at: string;
+}
+
+export interface Message {
   id: string;
   child_id: string;
   user_id: string;
@@ -57,31 +48,42 @@ export type Message = {
   profiles: {
     first_name: string | null;
     last_name: string | null;
-  } | null;
-};
+  };
+}
 
-export type MilestoneStatus = 'not_yet' | 'in_progress' | 'achieved';
-
-export type Milestone = {
+export interface AppNotification {
   id: string;
-  category: string;
-  age_group: string;
-  description: string;
-  source: string | null;
+  user_id: string;
+  child_id: string;
+  log_id?: string;
+  type: 'new_log' | 'new_message' | 'milestone_update' | 'appointment_reminder';
+  message: string;
+  is_read: boolean;
   created_at: string;
-};
+}
 
-export type ChildMilestoneStatus = {
+export interface Milestone {
+  id: string;
+  age_group: string;
+  category: string;
+  description: string;
+  source?: string;
+  created_at: string;
+}
+
+export type MilestoneStatus = 'not_yet' | 'emerging' | 'achieved' | 'concern';
+
+export interface ChildMilestoneStatus {
   id: string;
   child_id: string;
   milestone_id: string;
   status: MilestoneStatus;
-  notes: string | null;
-  evidence_url: string | null;
+  notes?: string;
+  evidence_url?: string;
   updated_by_user_id: string;
   updated_at: string;
-};
+}
 
-export type ChildMilestoneStatusWithMilestone = ChildMilestoneStatus & {
+export interface ChildMilestoneStatusWithMilestone extends ChildMilestoneStatus {
   milestones: Milestone;
-};
+}

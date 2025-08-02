@@ -1,5 +1,5 @@
 
-import { BrainCircuit, ShieldCheck, CalendarDays } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 import { useAuth } from '@/contexts/ClerkAuthContext';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
@@ -19,23 +19,8 @@ const Header = () => {
           </div>
         </Link>
       </div>
+      
       <div className="flex items-center gap-2 sm:gap-4">
-        {profile && (
-          <Button asChild variant="outline" size="sm">
-            <Link to="/appointments" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span className="hidden sm:inline">Appointments</span>
-            </Link>
-          </Button>
-        )}
-        {profile?.role === 'Admin' && (
-          <Button asChild variant="outline" size="sm">
-            <Link to="/compliance" className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Compliance</span>
-            </Link>
-          </Button>
-        )}
         <UserNav />
       </div>
     </header>

@@ -1,225 +1,125 @@
-import { useAuth } from '@/contexts/ClerkAuthContext';
-import { useState, useEffect } from 'react';
-import Header from '@/components/Header';
-import { LogEntry, Child, AppNotification } from '@/types';
-import NewLogForm from '@/components/NewLogForm';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getLogs } from '@/api/logs';
-import { getChildren } from '@/api/children';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import AiInsights from '@/components/AiInsights';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import QuickActions from '@/components/dashboard/QuickActions';
-import Timeline from '@/components/dashboard/Timeline';
-import { Button } from '@/components/ui/button';
-import { MilestoneTracker } from '@/components/milestones/MilestoneTracker';
-import { Rocket, AlertCircle, RefreshCw } from 'lucide-react';
-import { DashboardSkeleton } from '@/components/dashboard/LoadingStates';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const LOGS_PER_PAGE = 5;
+import { useAuth } from '@/contexts/ClerkAuthContext';
+import { Navigate } from 'react-router-dom';
+import Header from '@/components/Header';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, Users, Calendar, BarChart3 } from 'lucide-react';
 
 const Dashboard = () => {
-  const { profile, loading: authLoading } = useAuth();
-  const [selectedChildId, setSelectedChildId] = useState<string | undefined>();
-  const [currentPage, setCurrentPage] = useState(1);
-  const queryClient = useQueryClient();
-  const [showMilestoneTracker, setShowMilestoneTracker] = useState(false);
-  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
-  
-  const { 
-    data: children, 
-    isLoading: isLoadingChildren, 
-    error: childrenError,
-    refetch: refetchChildren 
-  } = useQuery<Child[]>({
-    queryKey: ['children'],
-    queryFn: getChildren,
-    retry: 3,
-    retryDelay: 1000,
-  });
+  const { user, profile, isLoading } = useAuth();
 
-  useEffect(() => {
-    if (children && children.length > 0 && !selectedChildId) {
-      setSelectedChildId(children[0].id);
-    }
-  }, [children, selectedChildId]);
-  
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedChildId]);
-
-  const { 
-    data: logsData, 
-    isLoading: isLoadingLogs, 
-    error: logsError,
-    refetch: refetchLogs 
-  } = useQuery<{logs: LogEntry[], count: number}>({
-    queryKey: ['logs', selectedChildId, currentPage],
-    queryFn: () => getLogs(selectedChildId!, currentPage),
-    enabled: !!selectedChildId && !showMilestoneTracker,
-    retry: 3,
-    retryDelay: 1000,
-  });
-
-  const logs = logsData?.logs;
-  const totalLogs = logsData?.count ?? 0;
-  const totalPages = Math.ceil(totalLogs / LOGS_PER_PAGE);
-
-  useEffect(() => {
-    if (!selectedChildId) return;
-
-    const channel = supabase
-      .channel(`realtime-logs-for-child-${selectedChildId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'logs',
-          filter: `child_id=eq.${selectedChildId}`,
-        },
-        (payload) => {
-          console.log('New log received via realtime!', payload);
-          const newLog = payload.new as LogEntry;
-          toast.info(`New log from ${newLog.author}: "${newLog.original_entry.title}"`);
-          queryClient.invalidateQueries({ queryKey: ['logs', selectedChildId] });
-        }
-      )
-      .subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          console.log(`Realtime channel subscribed for child: ${selectedChildId}`);
-        }
-        if (status === 'CHANNEL_ERROR') {
-          console.error(`Realtime channel error for child ${selectedChildId}:`, err);
-        }
-      });
-
-    return () => {
-      console.log(`Unsubscribing from realtime channel for child: ${selectedChildId}`);
-      supabase.removeChannel(channel);
-    };
-  }, [selectedChildId, queryClient]);
-
-  const handleNotificationClick = (notification: AppNotification) => {
-    if (notification.type === 'new_message' && notification.child_id) {
-      setSelectedChildId(notification.child_id);
-      setIsChatModalOpen(true);
-    }
-  };
-
-  const selectedChild = children?.find(child => child.id === selectedChildId);
-
-  // Show loading skeleton during initial auth load
-  if (authLoading) {
-    return <DashboardSkeleton />;
-  }
-
-  // Handle children loading error
-  if (childrenError) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="flex items-center justify-between">
-              <span>Failed to load children profiles. Please try again.</span>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => refetchChildren()}
-                className="ml-4"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </AlertDescription>
-          </Alert>
-        </main>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  if (showMilestoneTracker && selectedChild) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 md:px-8 pb-12 pt-8">
-          <MilestoneTracker 
-            selectedChild={selectedChild} 
-            onBack={() => setShowMilestoneTracker(false)} 
-          />
-        </main>
-      </div>
-    );
+  if (!user) {
+    return <Navigate to="/sign-in" replace />;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 md:px-8 pb-12">
-        <div className="space-y-8">
-          <DashboardHeader
-            children={children}
-            selectedChild={selectedChild}
-            selectedChildId={selectedChildId}
-            onSelectChild={(id) => {
-              setShowMilestoneTracker(false);
-              setSelectedChildId(id);
-            }}
-            isLoadingChildren={isLoadingChildren}
-          />
-          
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <QuickActions
-              selectedChild={selectedChild}
-              profile={profile}
-              onNotificationClick={handleNotificationClick}
-              isChatModalOpen={isChatModalOpen}
-              onChatModalOpenChange={setIsChatModalOpen}
-            />
-            {selectedChild && (
-              <Button onClick={() => setShowMilestoneTracker(true)} className="w-full lg:w-auto shrink-0">
-                <Rocket className="mr-2 h-4 w-4" />
-                Track Milestones
-              </Button>
-            )}
-          </div>
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Welcome back, {profile?.first_name || user.firstName || 'User'}!
+          </h1>
+          <p className="text-muted-foreground">
+            Here's what's happening with your family today.
+          </p>
+        </div>
 
-          {logsError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between">
-                <span>Failed to load logs. Please try again.</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => refetchLogs()}
-                  className="ml-4"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Retry
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+              <PlusCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Button className="w-full" variant="outline">
+                  Add Child Profile
                 </Button>
-              </AlertDescription>
-            </Alert>
-          )}
+                <Button className="w-full" variant="outline">
+                  Create Log Entry
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-3">
-            <Timeline 
-              logs={logs}
-              isLoading={isLoadingLogs}
-              isError={!!logsError}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-            <div className="space-y-6">
-              {logs && logs.length > 0 && <AiInsights logs={logs} />}
-              <NewLogForm selectedChildId={selectedChildId} />
-            </div>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Team Members</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">
+                Connected caregivers
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">
+                Appointments this week
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Your latest interactions and updates
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-6 text-muted-foreground">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4" />
+                <p>No recent activity</p>
+                <p className="text-sm">Start by adding a child profile or creating a log entry</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Getting Started</CardTitle>
+              <CardDescription>
+                Set up your account to get the most out of Parentrak
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <span className="text-sm">Complete your profile</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-muted rounded-full"></div>
+                  <span className="text-sm text-muted-foreground">Add your first child</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-muted rounded-full"></div>
+                  <span className="text-sm text-muted-foreground">Invite team members</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>

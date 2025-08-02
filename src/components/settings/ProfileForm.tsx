@@ -14,10 +14,8 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/ClerkAuthContext"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { updateProfile, ProfileUpdate } from "@/api/profiles"
 import { useToast } from "@/components/ui/use-toast"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 const profileFormSchema = z.object({
   first_name: z.string().max(50, "First name is too long.").optional().or(z.literal('')),
@@ -29,51 +27,22 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>
 export function ProfileForm() {
   const { profile, user } = useAuth()
   const { toast } = useToast()
-  const queryClient = useQueryClient()
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      first_name: profile?.first_name || "",
-      last_name: profile?.last_name || "",
+      first_name: profile?.first_name || user?.firstName || "",
+      last_name: profile?.last_name || user?.lastName || "",
     },
     mode: "onChange",
   })
 
-  const { mutate: updateProfileMutation, isPending } = useMutation({
-    mutationFn: (data: ProfileUpdate) => updateProfile(data),
-    onSuccess: () => {
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      })
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: error.message || "There was a problem with your request.",
-      })
-    },
-  })
-
   function onSubmit(data: ProfileFormValues) {
-    const updateData: ProfileUpdate = {};
-    if (data.first_name !== (profile?.first_name || "")) {
-      updateData.first_name = data.first_name;
-    }
-    if (data.last_name !== (profile?.last_name || "")) {
-      updateData.last_name = data.last_name;
-    }
-    if (Object.keys(updateData).length > 0) {
-      updateProfileMutation(updateData);
-    } else {
-      toast({
-        title: "No changes",
-        description: "You haven't made any changes to your profile.",
-      })
-    }
+    // Profile updates are handled by Clerk
+    toast({
+      title: "Profile updates",
+      description: "Profile updates are managed through your Clerk account settings.",
+    })
   }
 
   return (
@@ -94,7 +63,7 @@ export function ProfileForm() {
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your first name" {...field} value={field.value ?? ''} />
+                    <Input placeholder="Your first name" {...field} value={field.value ?? ''} readOnly />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,7 +76,7 @@ export function ProfileForm() {
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your last name" {...field} value={field.value ?? ''} />
+                    <Input placeholder="Your last name" {...field} value={field.value ?? ''} readOnly />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,15 +86,15 @@ export function ProfileForm() {
               <FormLabel>Email</FormLabel>
               <Input value={user?.emailAddresses?.[0]?.emailAddress || ''} readOnly disabled />
               <FormDescription>
-                You can't change your email address.
+                You can't change your email address here. Use your Clerk account settings.
               </FormDescription>
             </FormItem>
              <FormItem>
               <FormLabel>Role</FormLabel>
               <Input value={profile?.role || "Not set"} readOnly disabled />
             </FormItem>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Update profile"}
+            <Button type="submit" disabled>
+              Update profile (Managed by Clerk)
             </Button>
           </form>
         </Form>
